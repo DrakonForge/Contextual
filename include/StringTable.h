@@ -6,10 +6,10 @@
 
 namespace Contextual {
 
-class SymbolTable {
+class StringTable {
 public:
-    SymbolTable();
-    virtual ~SymbolTable() = default;
+    StringTable();
+    virtual ~StringTable() = default;
 
     int cache(const std::string& str);
     std::optional<std::string> lookup(int symbol) const;

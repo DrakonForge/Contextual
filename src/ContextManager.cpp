@@ -7,6 +7,6 @@ std::shared_ptr<ContextTable> ContextManager::createContextTable() {
     return contextTable;
 }
 
-SymbolTable& ContextManager::getSymbolTable() { return m_symbolTable; }
+StringTable& ContextManager::getStringTable() { return m_stringTable; }
 
 }

@@ -1,8 +1,11 @@
+#include <filesystem>
 #include <iostream>
 #include <iterator>
 
 #include "ContextTable.h"
-#include "SymbolTable.h"
+#include "RuleDatabase.h"
+#include "RuleParser.h"
+#include "StringTable.h"
 
 void print(std::unordered_set<int> const &s)
 {
@@ -18,13 +21,12 @@ void print(std::unordered_set<std::string> const &s)
               std::ostream_iterator<std::string>(std::cout, " "));
 }
 
-int main() {
-
+void testContext() {
     Contextual::ContextManager contextManager;
-    Contextual::SymbolTable& symbolTable = contextManager.getSymbolTable();
-    int a = symbolTable.cache("Hello world");
-    int b = symbolTable.cache("Hello world");
-    int c = symbolTable.cache("Hello!");
+    Contextual::StringTable& stringTable = contextManager.getStringTable();
+    int a = stringTable.cache("Hello world");
+    int b = stringTable.cache("Hello world");
+    int c = stringTable.cache("Hello!");
     std::cout << a << " " << b << " " << c << "\n";
 
     std::shared_ptr<Contextual::ContextTable> contextTable = contextManager.createContextTable();
@@ -43,6 +45,15 @@ int main() {
     std::cout << "Equipment: ";
     print(contextTable->getStringList("Equipment").value_or(std::unordered_set<std::string>()));
     std::cout << "\n";
+}
 
+void testDatabaseLoading() {
+    std::filesystem::path path = std::filesystem::path("..") / std::filesystem::path("data");
+    Contextual::RuleDatabase database;
+    Contextual::RuleParser::loadDatabase(database, path.string());
+}
+
+int main() {
+    testDatabaseLoading();
     return 0;
 }

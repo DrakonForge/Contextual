@@ -9,7 +9,7 @@
 
 namespace Contextual {
 
-enum class FactType {
+enum class FactType : uint8_t {
     kNull,
     kString,
     kNumber,
@@ -37,6 +37,7 @@ public:
     std::optional<bool> getBool(const std::string& key) const;
     std::optional<std::unordered_set<int>> getList(const std::string& key) const;
     std::optional<std::unordered_set<std::string>> getStringList(const std::string& key) const;
+    FactType getType(const std::string& key) const;
 
 private:
     struct FactTuple {

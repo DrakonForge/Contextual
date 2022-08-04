@@ -7,7 +7,7 @@ ContextTable::ContextTable(ContextManager& manager) : m_manager(manager) {
 }
 
 void ContextTable::set(const std::string& key, const std::string& strValue) {
-    int symbol = m_manager.getSymbolTable().cache(strValue);
+    int symbol = m_manager.getStringTable().cache(strValue);
     FactTuple tuple = { FactType::kString, static_cast<float>(symbol) };
     m_basicContext.insert({ key, tuple });
 }
@@ -42,7 +42,7 @@ void ContextTable::set(const std::string& key,
 void ContextTable::set(const std::string& key,
                        const std::unordered_set<const char*>& listValue) {
     std::unordered_set<int> intValues;
-    SymbolTable& symbolTable = m_manager.getSymbolTable();
+    StringTable& symbolTable = m_manager.getStringTable();
     for (const char* cStr : listValue) {
         intValues.insert(symbolTable.cache(std::string(cStr)));
     }
@@ -53,7 +53,7 @@ void ContextTable::set(const std::string& key,
 void ContextTable::set(const std::string& key,
                        const std::unordered_set<std::string>& listValue) {
     std::unordered_set<int> intValues;
-    SymbolTable& symbolTable = m_manager.getSymbolTable();
+    StringTable& symbolTable = m_manager.getStringTable();
     for (const std::string& str : listValue) {
         intValues.insert(symbolTable.cache(str));
     }
@@ -66,7 +66,7 @@ std::optional<std::string> ContextTable::getString(const std::string& key) const
         return std::nullopt;
     }
     int value = (int) tuple->value;
-    return m_manager.getSymbolTable().lookup(value);
+    return m_manager.getStringTable().lookup(value);
 }
 
 std::optional<float> ContextTable::getFloat(const std::string& key) const {
@@ -108,11 +108,22 @@ std::optional<std::unordered_set<std::string>> ContextTable::getStringList(
         return std::nullopt;
     }
     std::unordered_set<std::string> strList;
-    SymbolTable& symbolTable = m_manager.getSymbolTable();
+    StringTable& symbolTable = m_manager.getStringTable();
     for (auto value : *intList) {
         strList.insert(symbolTable.lookup(value).value_or("NULL"));
     }
     return strList;
+}
+
+FactType ContextTable::getType(const std::string& key) const {
+    if (m_listContext && m_listContext->find(key) != m_listContext->end()) {
+        return FactType::kList;
+    }
+    if (m_basicContext.find(key) == m_basicContext.end()) {
+        return FactType::kNull;
+    }
+    const FactTuple& tuple = m_basicContext.at(key);
+    return tuple.type;
 }
 
 std::optional<ContextTable::FactTuple> ContextTable::getTuple(const std::string& key, FactType type) const {

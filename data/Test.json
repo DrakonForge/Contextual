@@ -1,0 +1,120 @@
+{
+  "Parent": "Preset",
+  "Type": "Speechbank",
+  "Symbols": [
+    {
+      "Name": "name",
+      "Value": {
+        "Type": "Context",
+        "Table": "Listener",
+        "Key": "Name"
+      }
+    },
+    {
+      "Name": "them",
+      "Value": {
+        "Type": "Function",
+        "Value": "objective",
+        "Args": [
+          {
+            "Type": "Context",
+            "Table": "Listener",
+            "Key": "Gender"
+          }
+        ]
+      }
+    }
+  ],
+  "Categories": [
+    {
+      "Name": "Preset",
+      "Rules": [
+        {
+          "Name": "IsFriendly",
+          "Criteria": [
+            {
+              "Type": "Equals",
+              "Table": "Faction",
+              "Key": "IsFriendly",
+              "Value": true
+            }
+          ]
+        },
+        {
+          "Name": "IsNight",
+          "Criteria": [
+            {
+              "Type": "Range",
+              "Table": "World",
+              "Key": "Daytime",
+              "Value": [6, 21],
+              "Invert": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "Name": "Interact",
+      "Rules": [
+        {
+          "Criteria": [
+            {
+              "Type": "Named",
+              "Value": "IsFriend"
+            },
+            {
+              "Type": "Fail",
+              "Value": 0.5
+            }
+          ],
+          "Symbols": [
+            {
+              "Name": "subject",
+              "Type": "List",
+              "Value": [
+                {
+                  "Type": "String",
+                  "Value": "General Kenobi"
+                },
+                {
+                  "Type": "Function",
+                  "Value": "upper",
+                  "Args": [
+                    {
+                      "Type": "Symbol",
+                      "Value": "name"
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "Response": [
+            {
+              "Type": "Random",
+              "Value": [
+                "Hello there, @subject!"
+              ]
+            },
+            {
+              "Type": "Event",
+              "Value": "reply",
+              "Args": [
+                "any",
+                "Conversation1"
+              ]
+            },
+            {
+              "Type": "Context",
+              "Table": "Listener",
+              "Key": "Conversation",
+              "Operation": "Add",
+              "Value": 1
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

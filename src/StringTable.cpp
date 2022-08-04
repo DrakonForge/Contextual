@@ -1,4 +1,4 @@
-#include "SymbolTable.h"
+#include "StringTable.h"
 
 namespace Contextual {
 
@@ -6,11 +6,11 @@ namespace {
 const uint32_t g_STARTING_ID = 1000;
 }
 
-SymbolTable::SymbolTable() {
+StringTable::StringTable() {
     m_nextId = g_STARTING_ID;
 }
 
-int SymbolTable::cache(const std::string& str) {
+int StringTable::cache(const std::string& str) {
     if (m_cache.find(str) == m_cache.end()) {
         m_cache.insert({ str, m_nextId});
         m_lookup.insert({m_nextId, str});
@@ -19,14 +19,14 @@ int SymbolTable::cache(const std::string& str) {
     return m_cache.at(str);
 }
 
-std::optional<std::string> SymbolTable::lookup(int symbol) const {
+std::optional<std::string> StringTable::lookup(int symbol) const {
     if (m_lookup.find(symbol) == m_lookup.end()) {
         return std::nullopt;
     }
     return m_lookup.at(symbol);
 }
 
-size_t SymbolTable::getSize() const {
+size_t StringTable::getSize() const {
     return m_cache.size();
 }
 

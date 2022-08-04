@@ -3,7 +3,7 @@
 #include <memory>
 
 #include "ContextTable.h"
-#include "SymbolTable.h"
+#include "StringTable.h"
 
 namespace Contextual {
 
@@ -13,9 +13,9 @@ public:
     ContextManager() = default;
     virtual ~ContextManager() = default;
     std::shared_ptr<ContextTable> createContextTable();
-    SymbolTable& getSymbolTable();
+    StringTable& getStringTable();
 private:
-    SymbolTable m_symbolTable;
+    StringTable m_stringTable;
 };
 
 }
