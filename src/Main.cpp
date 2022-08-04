@@ -50,7 +50,11 @@ void testContext() {
 void testDatabaseLoading() {
     std::filesystem::path path = std::filesystem::path("..") / std::filesystem::path("data");
     Contextual::RuleDatabase database;
-    Contextual::RuleParser::loadDatabase(database, path.string());
+    Contextual::RuleParser::DatabaseStats stats = Contextual::RuleParser::loadDatabase(database, path.string());
+    std::cout << "Successful: " << stats.numLoaded << "\n";
+    std::cout << "Failed: " << stats.numLoaded << "\n";
+    std::cout << "# Tables: " << stats.numTables << "\n";
+    std::cout << "# Rules: " << stats.numRules << "\n";
 }
 
 int main() {

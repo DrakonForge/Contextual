@@ -47,7 +47,7 @@ struct RuleInfo {
 };
 
 struct ParsedGroup {
-    std::unordered_map<std::string, Token> symbols;
+    std::unordered_map<std::string, std::shared_ptr<Token>> symbols;
     std::unordered_map<std::string, RuleInfo> namedRules;
 };
 
@@ -61,7 +61,7 @@ struct ParsedData {
     RuleDatabase& database;
     std::queue<QueuedGroup> queuedGroups;
     std::unordered_map<std::string, ParsedGroup> parsedGroups;
-    DatabaseStats stats = {0, 0, 0};
+    DatabaseStats stats = {0, 0, 0, 0};
 };
 
 // Helper methods
@@ -107,7 +107,7 @@ RuleParserResult getParsingType(ParsingType& type, const rapidjson::Value& root)
     return g_RESULT_SUCCESS;
 }
 
-RuleParserResult parseSymbols(std::unordered_map<std::string, Token>& symbols, const rapidjson::Value& root, const std::optional<ParsedGroup>& parsedParent) {
+RuleParserResult parseSymbols(std::unordered_map<std::string, std::shared_ptr<Token>>& symbols, const rapidjson::Value& root, const std::optional<ParsedGroup>& parsedParent) {
     if (parsedParent) {
         symbols.insert(parsedParent->symbols.begin(), parsedParent->symbols.end());
     }
@@ -115,7 +115,7 @@ RuleParserResult parseSymbols(std::unordered_map<std::string, Token>& symbols, c
     return g_RESULT_SUCCESS;
 }
 
-RuleParserResult parseCategories(ParsedData& parsedData, std::unordered_map<std::string, RuleInfo>& namedRules, const rapidjson::Value& root, const std::unordered_map<std::string, Token>& symbols) {
+RuleParserResult parseCategories(ParsedData& parsedData, std::unordered_map<std::string, RuleInfo>& namedRules, const rapidjson::Value& root, const std::unordered_map<std::string, std::shared_ptr<Token>>& symbols) {
     if (root.HasMember(g_KEY_CATEGORIES)) {
         const auto& value = root[g_KEY_CATEGORIES];
         if (!value.IsArray()) {
@@ -135,7 +135,7 @@ RuleParserResult parseGroup(ParsedData& parsedData, const rapidjson::Value& root
     }
 
     // Symbols
-    std::unordered_map<std::string, Token> symbols;
+    std::unordered_map<std::string, std::shared_ptr<Token>> symbols;
     result = parseSymbols(symbols, root, parsedParent);
     if(result.code != RuleParserReturnCode::kSuccess) {
         return result;

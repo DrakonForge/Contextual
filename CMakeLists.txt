@@ -14,7 +14,17 @@ set(SOURCES
         src/RuleDatabase.cpp
         src/RuleTable.cpp
         src/RuleParser.cpp
-        src/Token.cpp include/DatabaseQuery.h src/TokenBoolean.cpp)
+        src/Token.cpp
+        src/TokenBoolean.cpp
+        src/TokenContext.cpp
+        src/TokenString.cpp
+        src/DatabaseQuery.cpp
+        src/TokenFloat.cpp
+        src/TokenFunction.cpp
+        src/TokenGroup.cpp
+        src/TokenInt.cpp
+        src/TokenList.cpp
+        src/TokenSymbol.cpp)
 set(INCLUDE_DIR ${CMAKE_SOURCE_DIR}/include ${RAPIDJSON_INCLUDE_DIR})
 
 add_executable(${EXECUTABLE_NAME} ${SOURCES})
