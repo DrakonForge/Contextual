@@ -7,22 +7,28 @@
       "Name": "name",
       "Value": {
         "Type": "Context",
-        "Table": "Listener",
-        "Key": "Name"
+        "Value": {
+          "Table": "Listener",
+          "Key": "Name"
+        }
       }
     },
     {
       "Name": "them",
       "Value": {
         "Type": "Function",
-        "Value": "objective",
-        "Args": [
-          {
-            "Type": "Context",
-            "Table": "Listener",
-            "Key": "Gender"
-          }
-        ]
+        "Value": {
+          "Name": "objective",
+          "Args": [
+            {
+              "Type": "Context",
+              "Value": {
+                "Table": "Listener",
+                "Key": "Gender"
+              }
+            }
+          ]
+        }
       }
     }
   ],
@@ -80,13 +86,15 @@
                 },
                 {
                   "Type": "Function",
-                  "Value": "upper",
-                  "Args": [
-                    {
-                      "Type": "Symbol",
-                      "Value": "name"
-                    }
-                  ]
+                  "Value": {
+                    "Name": "upper",
+                    "Args": [
+                      {
+                        "Type": "Symbol",
+                        "Value": "name"
+                      }
+                    ]
+                  }
                 }
               ]
             }

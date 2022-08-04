@@ -13,7 +13,7 @@ set(SOURCES
         src/ContextTable.cpp
         src/RuleDatabase.cpp
         src/RuleTable.cpp
-        src/RuleParser.cpp
+        src/json/DatabaseParser.cpp
         src/Token.cpp
         src/TokenBoolean.cpp
         src/TokenContext.cpp
@@ -24,8 +24,11 @@ set(SOURCES
         src/TokenGroup.cpp
         src/TokenInt.cpp
         src/TokenList.cpp
-        src/TokenSymbol.cpp)
-set(INCLUDE_DIR ${CMAKE_SOURCE_DIR}/include ${RAPIDJSON_INCLUDE_DIR})
+        include/json/JsonUtils.h include/json/TokenParser.h src/json/TokenParser.cpp)
+set(INCLUDE_DIR
+        ${CMAKE_SOURCE_DIR}/include
+        ${CMAKE_SOURCE_DIR}/include/json
+        ${RAPIDJSON_INCLUDE_DIR})
 
 add_executable(${EXECUTABLE_NAME} ${SOURCES})
 target_include_directories(${EXECUTABLE_NAME} PUBLIC ${INCLUDE_DIR})

@@ -3,8 +3,8 @@
 #include <iterator>
 
 #include "ContextTable.h"
+#include "DatabaseParser.h"
 #include "RuleDatabase.h"
-#include "RuleParser.h"
 #include "StringTable.h"
 
 void print(std::unordered_set<int> const &s)

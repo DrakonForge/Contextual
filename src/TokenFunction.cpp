@@ -5,7 +5,7 @@
 namespace Contextual {
 
 TokenFunction::TokenFunction(std::string name,
-                             std::vector<Token> args) : m_name(std::move(name)), m_args(std::move(args)) {
+                             std::vector<std::shared_ptr<Token>> args) : m_name(std::move(name)), m_args(std::move(args)) {
 
 }
 
