@@ -2,9 +2,7 @@
 
 namespace Contextual {
 
-ContextTable::ContextTable(ContextManager& manager) : m_manager(manager) {
-
-}
+ContextTable::ContextTable(ContextManager& manager) : m_manager(manager) {}
 
 void ContextTable::set(const std::string& key, const std::string& strValue) {
     int symbol = m_manager.getStringTable().cache(strValue);

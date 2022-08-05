@@ -2,10 +2,6 @@
 
 namespace Contextual {
 
-namespace {
-const int g_PRIORITY = 3;
-}
-
 CriterionStatic::CriterionStatic(const float min, const float max, const bool invert) : CriterionFloatComparable(invert), m_min(min), m_max(max) {}
 
 bool CriterionStatic::compare(float value) const {
@@ -13,9 +9,7 @@ bool CriterionStatic::compare(float value) const {
 }
 
 int CriterionStatic::getPriority() const {
-    return g_PRIORITY;
+    return 3;
 }
-
-
 
 }

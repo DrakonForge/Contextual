@@ -119,7 +119,7 @@ JsonParseResult parseFunction(std::shared_ptr<Token>& token, const rapidjson::Va
         }
         args.push_back(arg);
     }
-    token = std::make_shared<TokenFunction>(name, args);
+    token = std::make_shared<TokenFunction>(name, std::move(args));
     return JsonUtils::g_RESULT_SUCCESS;
 }
 
@@ -137,7 +137,7 @@ JsonParseResult parseList(std::shared_ptr<Token>& token, const rapidjson::Value&
         }
         items.push_back(item);
     }
-    token = std::make_shared<TokenList>(items);
+    token = std::make_shared<TokenList>(std::move(items));
     return JsonUtils::g_RESULT_SUCCESS;
 }
 

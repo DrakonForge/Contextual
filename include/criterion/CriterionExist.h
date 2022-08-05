@@ -6,8 +6,8 @@ namespace Contextual {
 
 class CriterionExist : public CriterionInvertible {
 public:
-    CriterionExist(bool invert);
-    int getPriority() const override;
+    explicit CriterionExist(bool invert);
+    [[nodiscard]] int getPriority() const override;
 };
 
 }

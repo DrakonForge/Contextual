@@ -30,9 +30,14 @@ set(SOURCES
         src/criterion/CriterionStatic.cpp
         src/criterion/CriterionInvertible.cpp
         src/criterion/CriterionFloatComparable.cpp
+        src/criterion/CriterionListComparable.cpp
         src/criterion/CriterionExist.cpp
         src/criterion/CriterionFail.cpp
-        src/criterion/Criterion.cpp)
+        src/criterion/Criterion.cpp
+        src/criterion/CriterionIncludes.cpp
+        src/criterion/CriterionEmpty.cpp
+        src/criterion/CriterionAlternate.cpp
+        src/criterion/CriterionDynamic.cpp)
 set(INCLUDE_DIR
         ${CMAKE_SOURCE_DIR}/include
         ${CMAKE_SOURCE_DIR}/include/json
