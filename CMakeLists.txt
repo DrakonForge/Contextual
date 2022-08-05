@@ -28,7 +28,9 @@ set(SOURCES
         src/token/TokenInt.cpp
         src/token/TokenList.cpp
         src/criterion/CriterionStatic.cpp
-        src/criterion/CriterionInvertible.cpp src/criterion/CriterionFloatComparable.cpp)
+        src/criterion/CriterionInvertible.cpp
+        src/criterion/CriterionFloatComparable.cpp
+        src/criterion/CriterionExist.cpp)
 set(INCLUDE_DIR
         ${CMAKE_SOURCE_DIR}/include
         ${CMAKE_SOURCE_DIR}/include/json

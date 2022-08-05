@@ -1,5 +1,6 @@
 #include "RuleParser.h"
 
+#include "CriterionExist.h"
 #include "CriterionStatic.h"
 
 namespace Contextual::RuleParser {
@@ -39,8 +40,11 @@ const std::unordered_set<std::string> g_SPECIAL_TYPES = {g_TYPE_NAMED, g_TYPE_DU
 const std::string g_DEFAULT_ID = "Id";
 const float g_EPSILON = std::numeric_limits<float>::epsilon();
 const float g_INFINITY = std::numeric_limits<float>::infinity();
-const std::shared_ptr<CriterionStatic> g_CRITERION_TRUE = std::make_shared<CriterionStatic>(-g_EPSILON, g_EPSILON, true);
-const std::shared_ptr<CriterionStatic> g_CRITERION_FALSE = std::make_shared<CriterionStatic>(-g_EPSILON, g_EPSILON, false);
+
+const std::shared_ptr<CriterionStatic> g_CRITERION_EQUALS_TRUE = std::make_shared<CriterionStatic>(-g_EPSILON, g_EPSILON, true);
+const std::shared_ptr<CriterionStatic> g_CRITERION_EQUALS_FALSE = std::make_shared<CriterionStatic>(-g_EPSILON, g_EPSILON, false);
+const std::shared_ptr<CriterionExist> g_CRITERION_EXISTS_TRUE = std::make_shared<CriterionExist>(false);
+const std::shared_ptr<CriterionExist> g_CRITERION_EXISTS_FALSE = std::make_shared<CriterionExist>(true);
 
 JsonParseResult getTableKey(std::string& table, std::string& key, const rapidjson::Value& root) {
     if(!root.HasMember(g_KEY_TABLE)) {
@@ -80,9 +84,9 @@ JsonParseResult parseEqualsCriterion(std::vector<std::shared_ptr<Criteria>>& cri
         criteria.push_back(std::make_shared<Criteria>(table, key, std::make_shared<CriterionStatic>(numValue - g_EPSILON, numValue + g_EPSILON, invert)));
     } else if(value.IsBool()) {
         if(value.GetBool() != invert) {
-            criteria.push_back(std::make_shared<Criteria>(table, key, g_CRITERION_TRUE));
+            criteria.push_back(std::make_shared<Criteria>(table, key, g_CRITERION_EQUALS_TRUE));
         } else {
-            criteria.push_back(std::make_shared<Criteria>(table, key, g_CRITERION_FALSE));
+            criteria.push_back(std::make_shared<Criteria>(table, key, g_CRITERION_EQUALS_FALSE));
         }
     } else if(value.IsObject()) {
         // Dynamic
@@ -153,7 +157,11 @@ JsonParseResult parseRangeCriterion(std::vector<std::shared_ptr<Criteria>>& crit
 }
 
 JsonParseResult parseExistsCriterion(std::vector<std::shared_ptr<Criteria>>& criteria, int& priority, const rapidjson::Value& root, const std::string& table, const std::string& key, const bool invert) {
-    // TODO Exists criterion
+    if(invert) {
+        criteria.push_back(std::make_shared<Criteria>(table, key, g_CRITERION_EXISTS_FALSE));
+    } else {
+        criteria.push_back(std::make_shared<Criteria>(table, key, g_CRITERION_EXISTS_TRUE));
+    }
     ++priority;
     return JsonUtils::g_RESULT_SUCCESS;
 }

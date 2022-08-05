@@ -106,7 +106,11 @@ JsonParseResult parseFunction(std::shared_ptr<Token>& token, const rapidjson::Va
         return result;
     }
     const auto& argValue = value[g_KEY_FUNCTION_ARGS];
+    if(!argValue.IsArray()) {
+        return {JsonParseReturnCode::kInvalidType, "Key \"" + g_KEY_FUNCTION_ARGS + "\" must be an array"};
+    }
     std::vector<std::shared_ptr<Token>> args;
+    args.reserve(argValue.Size());
     for(auto iter = argValue.Begin(); iter != argValue.End(); ++iter) {
         std::shared_ptr<Token> arg;
         result = parseToken(arg, *iter, symbols);
@@ -124,6 +128,7 @@ JsonParseResult parseList(std::shared_ptr<Token>& token, const rapidjson::Value&
         return {JsonParseReturnCode::kInvalidType, "Token of type \"" + g_TYPE_LIST + "\" must have an array value" };
     }
     std::vector<std::shared_ptr<Token>> items;
+    items.reserve(value.Size());
     for(auto iter = value.Begin(); iter != value.End(); ++iter) {
         std::shared_ptr<Token> item;
         auto result = parseToken(item, *iter, symbols);
