@@ -1,34 +1,29 @@
 {
   "Name": "Person",
-  "Parent": "Preset",
   "Type": "Speechbank",
   "Symbols": [
     {
       "Name": "name",
+      "Type": "Context",
       "Value": {
-        "Type": "Context",
-        "Value": {
-          "Table": "Listener",
-          "Key": "Name"
-        }
+        "Table": "Listener",
+        "Key": "Name"
       }
     },
     {
       "Name": "them",
+      "Type": "Function",
       "Value": {
-        "Type": "Function",
-        "Value": {
-          "Name": "objective",
-          "Args": [
-            {
-              "Type": "Context",
-              "Value": {
-                "Table": "Listener",
-                "Key": "Gender"
-              }
+        "Name": "objective",
+        "Args": [
+          {
+            "Type": "Context",
+            "Value": {
+              "Table": "Listener",
+              "Key": "Gender"
             }
-          ]
-        }
+          }
+        ]
       }
     }
   ],

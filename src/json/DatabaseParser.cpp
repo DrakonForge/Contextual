@@ -27,7 +27,6 @@ const std::string g_KEY_SYMBOLS = "Symbols";
 const std::string g_KEY_CATEGORIES = "Categories";
 
 const std::string g_KEY_SYMBOL_NAME = "Name";
-const std::string g_KEY_SYMBOL_VALUE = "Value";
 
 const std::string g_KEY_CATEGORY_NAME = "Name";
 const std::string g_KEY_CATEGORY_RULES = "Rules";
@@ -88,9 +87,6 @@ JsonParseResult parseSymbol(std::unordered_map<std::string, std::shared_ptr<Toke
     if(!root.HasMember(g_KEY_SYMBOL_NAME)) {
         return {JsonParseReturnCode::kMissingKey, "Symbol must specify key \"" + g_KEY_SYMBOL_NAME + "\"" };
     }
-    if(!root.HasMember(g_KEY_SYMBOL_VALUE)) {
-        return {JsonParseReturnCode::kMissingKey, "Symbol must specify key \"" + g_KEY_SYMBOL_VALUE + "\"" };
-    }
 
     std::string name;
     auto result = JsonUtils::getString(name, root, g_KEY_SYMBOL_NAME);
@@ -101,7 +97,6 @@ JsonParseResult parseSymbol(std::unordered_map<std::string, std::shared_ptr<Toke
         return {JsonParseReturnCode::kAlreadyDefined, "Symbol \"" + name + "\" is already defined" };
     }
 
-    const auto& value = root[g_KEY_SYMBOL_VALUE];
     std::shared_ptr<Token> token;
     result = TokenParser::parseToken(token, root, symbols);
     if (result.code != JsonParseReturnCode::kSuccess) {
@@ -273,7 +268,6 @@ void readAllFiles(ParsedData& parsedData, const std::string& dirPath) {
         if(extension == g_EXT_JSON) {
             const std::string& pathStr = file.path().string();
             JsonParseResult result = readGroup(parsedData, pathStr, false);
-
             if(result.code == JsonParseReturnCode::kSuccess) {
                 std::cout << "Successfully parsed " << pathStr << "\n";
                 ++parsedData.stats.numLoaded;

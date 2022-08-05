@@ -16,7 +16,7 @@ namespace Contextual::TokenParser {
 namespace {
 
 const std::string g_KEY_TYPE = "Type";
-const std::string g_KEY_VALUE = "Type";
+const std::string g_KEY_VALUE = "Value";
 
 const std::string g_KEY_CONTEXT_TABLE = "Table";
 const std::string g_KEY_CONTEXT_KEY = "Key";
