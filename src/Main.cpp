@@ -43,7 +43,7 @@ void testContext() {
     std::cout << "Name: " << contextTable->getString("Name").value_or("-999") << "\n";
     std::cout << "IsAlive: " << contextTable->getBool("IsAlive").value_or(-999) << "\n";
     std::cout << "Equipment: ";
-    print(contextTable->getStringList("Equipment").value_or(std::unordered_set<std::string>()));
+    print(contextTable->toStringList("Equipment").value_or(std::unordered_set<std::string>()));
     std::cout << "\n";
 }
 
