@@ -1,6 +1,9 @@
 #include "RuleParser.h"
 
+#include <iostream>
+
 #include "CriterionExist.h"
+#include "CriterionFail.h"
 #include "CriterionStatic.h"
 
 namespace Contextual::RuleParser {
@@ -189,6 +192,21 @@ JsonParseResult parseDummyCriterion(int& priority, const rapidjson::Value& value
     return JsonUtils::g_RESULT_SUCCESS;
 }
 
+JsonParseResult parseFailCriterion(std::vector<std::shared_ptr<Criteria>>& criteria, int& priority, const rapidjson::Value& value) {
+    if(!value.IsNumber()) {
+        return {JsonParseReturnCode::kInvalidType, "Fail criterion must have a numeric value"};
+    }
+    float numValue = value.GetFloat();
+    if(numValue < 0 || numValue > 1) {
+        return {JsonParseReturnCode::kInvalidType, "Fail criterion must have a numeric value within the range [0, 1]"};
+    }
+
+    // Table and key should be unused
+    criteria.push_back(std::make_shared<Criteria>("", "", std::make_shared<CriterionFail>(numValue)));
+    ++priority;
+    return JsonUtils::g_RESULT_SUCCESS;
+}
+
 JsonParseResult parseSpecialCriterion(std::vector<std::shared_ptr<Criteria>>& criteria, int& priority, const std::string& type, const rapidjson::Value& root, const std::unordered_map<std::string, RuleInfo>& namedRules) {
     if(!root.HasMember(g_KEY_CRITERION_VALUE)) {
         return {JsonParseReturnCode::kMissingKey, "Criterion must specify key \"" + g_KEY_CRITERION_VALUE + "\""};
@@ -203,7 +221,7 @@ JsonParseResult parseSpecialCriterion(std::vector<std::shared_ptr<Criteria>>& cr
         return parseDummyCriterion(priority, value);
     }
     if(type == g_TYPE_FAIL) {
-        // TODO: Fail criterion
+        return parseFailCriterion(criteria, priority, value);
     }
     return {JsonParseReturnCode::kInvalidValue, "Unrecognized special criterion type \"" + type + "\""};
 }
@@ -357,10 +375,14 @@ JsonParseResult parseRule(
         ++nextId;
     }
 
-    // Rule has no response, do not create entry for it
-    if(response == nullptr) {
+    // TODO: Temp code since responses are not parsed yet
+    if(!root.HasMember(g_KEY_RESPONSE)) {
         return {JsonParseReturnCode::kSkipCreation, ""};
     }
+    // Rule has no response, do not create entry for it
+//    if(response == nullptr) {
+//        return {JsonParseReturnCode::kSkipCreation, ""};
+//    }
 
     rule = std::make_unique<RuleEntry>();
     rule->id = id;

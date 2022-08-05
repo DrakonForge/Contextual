@@ -2,6 +2,6 @@
 
 namespace Contextual {
 
-CriterionFloatComparable::CriterionFloatComparable(bool invert) : CriterionInvertible(invert) {}
+CriterionFloatComparable::CriterionFloatComparable(const bool invert) : CriterionInvertible(invert) {}
 
 }

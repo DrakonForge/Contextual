@@ -5,12 +5,13 @@
 namespace Contextual {
 
 namespace {
-    const std::unique_ptr<RuleEntry> g_NOT_FOUND = nullptr;
+const std::unique_ptr<RuleEntry> g_NOT_FOUND = nullptr;
 
 // Descending order
-    bool compareEntries(const std::unique_ptr<RuleEntry>& entry1, const std::unique_ptr<RuleEntry>& entry2) {
-        return entry1->priority > entry2->priority;
-    }
+bool compareEntries(const std::unique_ptr<RuleEntry>& entry1, const std::unique_ptr<RuleEntry>& entry2) {
+    return entry1->priority > entry2->priority;
+}
+
 }
 
 void RuleTable::addEntry(std::unique_ptr<RuleEntry>& ruleEntry) {

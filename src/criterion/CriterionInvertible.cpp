@@ -2,6 +2,6 @@
 
 namespace Contextual {
 
-CriterionInvertible::CriterionInvertible(bool invert) : m_invert(invert) {}
+CriterionInvertible::CriterionInvertible(const bool invert) : m_invert(invert) {}
 
 }

@@ -35,7 +35,7 @@
           "Name": "IsFriendly",
           "Criteria": [
             {
-              "Type": "Equals",
+              "Type": "Eq",
               "Table": "Faction",
               "Key": "IsFriendly",
               "Value": true
@@ -46,7 +46,7 @@
           "Name": "IsNight",
           "Criteria": [
             {
-              "Type": "Range",
+              "Type": "LtLt",
               "Table": "World",
               "Key": "Daytime",
               "Value": [6, 21],
@@ -63,7 +63,7 @@
           "Criteria": [
             {
               "Type": "Named",
-              "Value": "IsFriend"
+              "Value": "IsFriendly"
             },
             {
               "Type": "Fail",

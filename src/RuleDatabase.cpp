@@ -32,6 +32,7 @@ const std::unique_ptr<RuleTable>& RuleDatabase::getRuleTable(
     }
     return m_groupCategoryToTable.at(groupCategory);
 }
+
 ContextManager& RuleDatabase::getContextManager() {
     return m_contextManager;
 }

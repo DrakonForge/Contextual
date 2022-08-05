@@ -136,6 +136,8 @@ JsonParseResult parseCategory(ParsedData& parsedData, std::unordered_map<std::st
     if(!root.HasMember(g_KEY_CATEGORY_RULES)) {
         return {JsonParseReturnCode::kMissingKey, "Category must specify key \"" + g_KEY_CATEGORY_RULES + "\""};
     }
+
+    // Get category name
     std::string categoryName;
     auto result = JsonUtils::getString(categoryName, root, g_KEY_CATEGORY_NAME);
     if(result.code != JsonParseReturnCode::kSuccess) {
@@ -166,9 +168,11 @@ JsonParseResult parseCategory(ParsedData& parsedData, std::unordered_map<std::st
         ruleTable->addEntry(ruleEntry);
         ++parsedData.stats.numRules;
     }
-    ruleTable->sortEntries();
-    parsedData.database.addRuleTable(groupName, categoryName, ruleTable);
-    ++parsedData.stats.numTables;
+    if(ruleTable->getNumEntries() > 0) {
+        ruleTable->sortEntries();
+        parsedData.database.addRuleTable(groupName, categoryName, ruleTable);
+        ++parsedData.stats.numTables;
+    }
     return JsonUtils::g_RESULT_SUCCESS;
 }
 
@@ -180,6 +184,9 @@ JsonParseResult parseCategories(ParsedData& parsedData, std::unordered_map<std::
         }
         for(auto iter = value.Begin(); iter != value.End(); ++iter) {
             auto result = parseCategory(parsedData, namedRules, type, *iter, symbols, groupName);
+            if(result.code != JsonParseReturnCode::kSuccess) {
+                return result;
+            }
         }
     }
     return JsonUtils::g_RESULT_SUCCESS;

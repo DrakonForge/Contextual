@@ -10,8 +10,8 @@ public:
     [[nodiscard]] bool compare(float value) const override;
     [[nodiscard]] int getPriority() const override;
 private:
-    float m_min;
-    float m_max;
+    const float m_min;
+    const float m_max;
 };
 
 }
