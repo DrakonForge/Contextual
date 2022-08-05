@@ -2,9 +2,11 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
-#include "Criterion.h"
+#include "criterion/Criterion.h"
+#include "DatabaseQuery.h"
 #include "Response.h"
 
 namespace Contextual {
@@ -13,11 +15,13 @@ struct Criteria {
     std::string table;
     std::string key;
     std::shared_ptr<Criterion> criterion;
+    Criteria(std::string pTable, std::string pKey, std::shared_ptr<Criterion> pCriterion) : table(std::move(pTable)), key(std::move(pKey)), criterion(std::move(pCriterion)) {}
 };
 
 struct RuleEntry {
-    std::string name;
-    std::vector<Criteria> criteria;
+    // ID should be in the form Group.Category.Name or Group.Category.Id0000
+    std::string id;
+    std::vector<std::shared_ptr<Criteria>> criteria;
     std::shared_ptr<Response> response;
     int priority;
 };
@@ -26,8 +30,13 @@ class RuleTable {
 public:
     RuleTable() = default;
     virtual ~RuleTable() = default;
+    void addEntry(std::unique_ptr<RuleEntry>& ruleEntry);
+    bool sortEntries();
+    const std::unique_ptr<RuleEntry>& query(DatabaseQuery query);
+    size_t getNumEntries();
 private:
-    std::vector<RuleEntry> m_entries;
+    std::vector<std::unique_ptr<RuleEntry>> m_entries;
+    bool m_sorted = false;
 };
 
 }

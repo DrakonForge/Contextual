@@ -1,4 +1,4 @@
-#include "TokenBoolean.h"
+#include "token/TokenBoolean.h"
 
 namespace Contextual {
 

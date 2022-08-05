@@ -3,13 +3,13 @@
 #include <vector>
 
 #include "JsonUtils.h"
-#include "TokenBoolean.h"
-#include "TokenContext.h"
-#include "TokenFloat.h"
-#include "TokenFunction.h"
-#include "TokenInt.h"
-#include "TokenList.h"
-#include "TokenString.h"
+#include "token/TokenBoolean.h"
+#include "token/TokenContext.h"
+#include "token/TokenFloat.h"
+#include "token/TokenFunction.h"
+#include "token/TokenInt.h"
+#include "token/TokenList.h"
+#include "token/TokenString.h"
 
 namespace Contextual::TokenParser {
 
@@ -116,6 +116,7 @@ JsonParseResult parseFunction(std::shared_ptr<Token>& token, const rapidjson::Va
         args.push_back(arg);
     }
     token = std::make_shared<TokenFunction>(name, args);
+    return JsonUtils::g_RESULT_SUCCESS;
 }
 
 JsonParseResult parseList(std::shared_ptr<Token>& token, const rapidjson::Value& value, const std::unordered_map<std::string, std::shared_ptr<Token>>& symbols) {
@@ -186,10 +187,7 @@ JsonParseResult parseToken(std::shared_ptr<Token>& token, const rapidjson::Value
     } else {
         return {JsonParseReturnCode::kInvalidValue, "Invalid token type \"" + type + "\""};
     }
-    if(result.code != JsonParseReturnCode::kSuccess) {
-        return result;
-    }
-    return JsonUtils::g_RESULT_SUCCESS;
+    return result;
 }
 
 }

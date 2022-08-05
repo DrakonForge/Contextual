@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <string>
 #include <unordered_map>
 
@@ -14,9 +15,11 @@ enum class RuleDatabaseReturnCode : uint32_t {
 
 class RuleDatabase {
 public:
-    RuleDatabase();
+    explicit RuleDatabase(ContextManager& contextManager);
     virtual ~RuleDatabase() = default;
-    RuleDatabaseReturnCode addRuleTable(const std::string& group, const std::string& category, const RuleTable& ruleTable);
+    RuleDatabaseReturnCode addRuleTable(const std::string& group, const std::string& category, std::unique_ptr<RuleTable>& ruleTable);
+    const std::unique_ptr<RuleTable>& getRuleTable(const std::string& group, const std::string& category) const;
+    ContextManager& getContextManager();
 private:
     struct GroupCategory {
         std::string group;
@@ -32,7 +35,8 @@ private:
             return gc1.group == gc2.group && gc1.category == gc2.category;
         }
     };
-    std::unordered_map<GroupCategory, RuleTable, GroupCategoryHash, GroupCategoryEquals> m_groupCategoryToTable;
+    ContextManager& m_contextManager;
+    std::unordered_map<GroupCategory, std::unique_ptr<RuleTable>, GroupCategoryHash, GroupCategoryEquals> m_groupCategoryToTable;
 };
 
 }

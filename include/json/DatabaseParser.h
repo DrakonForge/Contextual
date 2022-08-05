@@ -14,6 +14,11 @@ struct DatabaseStats {
     uint32_t numRules;
 };
 
+enum class ParsingType : uint8_t {
+    kDefault,
+    kSpeechbank
+};
+
 JsonParseResult loadGroup(RuleDatabase& out, const std::string& path);
 DatabaseStats loadDatabase(RuleDatabase& out, const std::string& dirPath);
 }

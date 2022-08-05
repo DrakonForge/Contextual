@@ -10,8 +10,8 @@
 #include <rapidjson/error/en.h>
 
 #include "JsonUtils.h"
-#include "Response.h"
-#include "Token.h"
+#include "RuleParser.h"
+#include "token/Token.h"
 #include "TokenParser.h"
 
 namespace Contextual::RuleParser {
@@ -29,38 +29,19 @@ const std::string g_KEY_CATEGORIES = "Categories";
 const std::string g_KEY_SYMBOL_NAME = "Name";
 const std::string g_KEY_SYMBOL_VALUE = "Value";
 
-const std::string g_KEY_TOKEN_TYPE = "Type";
-const std::string g_KEY_TOKEN_CONTEXT_TABLE = "Table";
-const std::string g_KEY_TOKEN_CONTEXT_KEY = "Key";
-
 const std::string g_KEY_CATEGORY_NAME = "Name";
 const std::string g_KEY_CATEGORY_RULES = "Rules";
-
-const std::string g_KEY_RULE_NAME = "Name";
-const std::string g_KEY_RULE_CRITERIA = "Criteria";
-const std::string g_KEY_RULE_SYMBOLS = "Symbols";
-const std::string g_KEY_RULE_RESPONSE = "Response";
 
 const std::string g_TYPE_DEFAULT = "Default";
 const std::string g_TYPE_SPEECHBANK = "Speechbank";
 
 const std::string g_EXT_JSON = ".json";
 
-// Enums and Structs
-
-enum class ParsingType : uint8_t {
-    kDefault,
-    kSpeechbank
-};
-
-struct RuleInfo {
-    std::vector<Criteria> criteria;
-    std::shared_ptr<Response> response;
-};
+// Structs
 
 struct ParsedGroup {
     std::unordered_map<std::string, std::shared_ptr<Token>> symbols;
-    std::unordered_map<std::string, RuleInfo> namedRules;
+    std::unordered_map<std::string, RuleParser::RuleInfo> namedRules;
 };
 
 struct QueuedGroup {
@@ -150,7 +131,7 @@ JsonParseResult parseSymbols(std::unordered_map<std::string, std::shared_ptr<Tok
     return JsonUtils::g_RESULT_SUCCESS;
 }
 
-JsonParseResult parseCategory(ParsedData& parsedData, std::unordered_map<std::string, RuleInfo>& namedRules, const ParsingType type, const rapidjson::Value& root, const std::unordered_map<std::string, std::shared_ptr<Token>>& symbols) {
+JsonParseResult parseCategory(ParsedData& parsedData, std::unordered_map<std::string, RuleParser::RuleInfo>& namedRules, const ParsingType type, const rapidjson::Value& root, const std::unordered_map<std::string, std::shared_ptr<Token>>& symbols, const std::string& groupName) {
     if(!root.IsObject()) {
         return {JsonParseReturnCode::kInvalidType, "Category must be a JSON object"};
     }
@@ -160,30 +141,50 @@ JsonParseResult parseCategory(ParsedData& parsedData, std::unordered_map<std::st
     if(!root.HasMember(g_KEY_CATEGORY_RULES)) {
         return {JsonParseReturnCode::kMissingKey, "Category must specify key \"" + g_KEY_CATEGORY_RULES + "\""};
     }
-    std::string name;
-    auto result = JsonUtils::getString(name, root, g_KEY_CATEGORY_NAME);
+    std::string categoryName;
+    auto result = JsonUtils::getString(categoryName, root, g_KEY_CATEGORY_NAME);
     if(result.code != JsonParseReturnCode::kSuccess) {
         return result;
     }
+    if(parsedData.database.getRuleTable(groupName, categoryName) != nullptr) {
+        return {JsonParseReturnCode::kAlreadyDefined, "Category \"" + categoryName + "\" for group \"" + groupName + "\" is already defined" };
+    }
+
     const auto& rulesValue = root[g_KEY_CATEGORY_RULES];
     if(!rulesValue.IsArray()) {
         return {JsonParseReturnCode::kInvalidType, "Key \"" + g_KEY_CATEGORY_RULES + "\" must be an array"};
     }
+
+    auto ruleTable = std::make_unique<RuleTable>();
+    int nextId = 0; // ID used for unnamed rules
+    const std::string idPrefix = groupName + "." + categoryName + ".";
+    StringTable& stringTable = parsedData.database.getContextManager().getStringTable();
     for(auto iter = rulesValue.Begin(); iter != rulesValue.End(); ++iter) {
-        // TODO
+        std::unique_ptr<RuleEntry> ruleEntry;
+        result = RuleParser::parseRule(stringTable, ruleEntry, namedRules, nextId, *iter, idPrefix, type, symbols);
+        if(result.code == JsonParseReturnCode::kSkipCreation) {
+            continue;
+        }
+        if(result.code != JsonParseReturnCode::kSuccess) {
+            return result;
+        }
+        ruleTable->addEntry(ruleEntry);
+        ++parsedData.stats.numRules;
     }
-    // TODO
+    ruleTable->sortEntries();
+    parsedData.database.addRuleTable(groupName, categoryName, ruleTable);
+    ++parsedData.stats.numTables;
     return JsonUtils::g_RESULT_SUCCESS;
 }
 
-JsonParseResult parseCategories(ParsedData& parsedData, std::unordered_map<std::string, RuleInfo>& namedRules, const ParsingType type, const rapidjson::Value& root, const std::unordered_map<std::string, std::shared_ptr<Token>>& symbols) {
+JsonParseResult parseCategories(ParsedData& parsedData, std::unordered_map<std::string, RuleParser::RuleInfo>& namedRules, const ParsingType type, const rapidjson::Value& root, const std::unordered_map<std::string, std::shared_ptr<Token>>& symbols, const std::string& groupName) {
     if (root.HasMember(g_KEY_CATEGORIES)) {
         const auto& value = root[g_KEY_CATEGORIES];
         if (!value.IsArray()) {
             return {JsonParseReturnCode::kInvalidType, "Key \"" + g_KEY_CATEGORIES + "\" must be an array" };
         }
         for(auto iter = value.Begin(); iter != value.End(); ++iter) {
-            auto result = parseCategory(parsedData, namedRules, type, *iter, symbols);
+            auto result = parseCategory(parsedData, namedRules, type, *iter, symbols, groupName);
         }
     }
     return JsonUtils::g_RESULT_SUCCESS;
@@ -204,8 +205,8 @@ JsonParseResult parseGroup(ParsedData& parsedData, const rapidjson::Value& root,
         return result;
     }
 
-    std::unordered_map<std::string, RuleInfo> namedRules;
-    result = parseCategories(parsedData, namedRules, type, root, symbols);
+    std::unordered_map<std::string, RuleParser::RuleInfo> namedRules;
+    result = parseCategories(parsedData, namedRules, type, root, symbols, name);
     if(result.code != JsonParseReturnCode::kSuccess) {
         return result;
     }
@@ -250,7 +251,7 @@ JsonParseResult readGroup(ParsedData& parsedData, const std::string& path, bool 
             if(!allowMissingParent) {
                 // Parent is not loaded yet, add to queue
                 parsedData.queuedGroups.push({document, name, parentName});
-                return {JsonParseReturnCode::kParentNotYetLoaded, ""};
+                return {JsonParseReturnCode::kSkipCreation, ""};
             }
         } else {
             parsedParent = parsedData.parsedGroups.at(parentName);
@@ -276,8 +277,7 @@ void readAllFiles(ParsedData& parsedData, const std::string& dirPath) {
             if(result.code == JsonParseReturnCode::kSuccess) {
                 std::cout << "Successfully parsed " << pathStr << "\n";
                 ++parsedData.stats.numLoaded;
-            } else if(result.code !=
-                       JsonParseReturnCode::kParentNotYetLoaded) {
+            } else if(result.code != JsonParseReturnCode::kSkipCreation) {
                 std::cerr << "Failed to parse " << pathStr << ": " << result.errorMsg << "\n";
                 ++parsedData.stats.numFailed;
             }
