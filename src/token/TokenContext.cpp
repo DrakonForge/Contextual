@@ -9,17 +9,23 @@ namespace Contextual {
 TokenContext::TokenContext(std::string table, std::string key) : m_table(std::move(table)), m_key(std::move(key)) {}
 
 std::optional<std::string> TokenContext::evaluate(const DatabaseQuery& query) const {
-    FactType type = FactType::kNumber;
-    //FactType type = query.getContextType(m_table, m_key);
-    if(type == FactType::kString) {
-        // TODO: GET AS STRING
-        return std::nullopt;
+    std::shared_ptr<ContextTable> contextTable = query.getContextTable(m_table);
+    if(contextTable != nullptr) {
+        FactType type = contextTable->getType(m_key);
+        if(type == FactType::kString) {
+            const std::optional<std::string>& value = contextTable->getString(m_key);
+            if(value) {
+                return value;
+            }
+        }
+        if(type == FactType::kNumber) {
+            const std::optional<int>& value = contextTable->getInt(m_key);
+            if(value) {
+                // TODO: GET AS INTEGER WORD
+                return std::to_string(*value);
+            }
+        }
     }
-    if(type == FactType::kNumber) {
-        // TODO: GET AS INTEGER WORD
-        return std::nullopt;
-    }
-    // Other tokens should not be evaluated to string
     return std::nullopt;
 }
 

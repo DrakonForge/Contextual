@@ -13,8 +13,7 @@ int CriterionFail::getPriority() const {
 bool CriterionFail::evaluate(const std::string& table,
                                  const std::string& key,
                                  const DatabaseQuery& query) const {
-    // Super low effort random implementation
-    // TODO: Make this better later?
+    // TODO Improve RNG generation
     // https://stackoverflow.com/questions/28653255/stddefault-random-engine-generates-the-same-values-even-with-changing-seed
     static std::default_random_engine e;
     static std::uniform_real_distribution<float> dis(0.0f, 1.0f);

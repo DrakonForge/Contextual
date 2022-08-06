@@ -10,7 +10,7 @@ TokenFunction::TokenFunction(std::string name,
 }
 
 std::optional<std::string> TokenFunction::evaluate(const DatabaseQuery& query) const {
-    // TODO
+    // TODO: Evaluate function
     return std::nullopt;
 }
 
