@@ -307,7 +307,7 @@ JsonParseResult parseDummyCriterion(int& priority, const rapidjson::Value& value
     return JsonUtils::g_RESULT_SUCCESS;
 }
 
-JsonParseResult parseFailCriterion(std::vector<std::shared_ptr<Criteria>>& criteria, int& priority, const rapidjson::Value& value) {
+JsonParseResult parseFailCriterion(std::vector<std::shared_ptr<Criteria>>& criteria, const rapidjson::Value& value) {
     if(!value.IsNumber()) {
         return {JsonParseReturnCode::kInvalidType, "Fail criterion must have a numeric value"};
     }
@@ -318,7 +318,6 @@ JsonParseResult parseFailCriterion(std::vector<std::shared_ptr<Criteria>>& crite
 
     // Table and key should be unused
     criteria.push_back(std::make_shared<Criteria>("", "", std::make_shared<CriterionFail>(numValue)));
-    ++priority;
     return JsonUtils::g_RESULT_SUCCESS;
 }
 
@@ -336,7 +335,7 @@ JsonParseResult parseSpecialCriterion(std::vector<std::shared_ptr<Criteria>>& cr
         return parseDummyCriterion(priority, value);
     }
     if(type == g_TYPE_FAIL) {
-        return parseFailCriterion(criteria, priority, value);
+        return parseFailCriterion(criteria, value);
     }
     return {JsonParseReturnCode::kInvalidValue, "Unrecognized special criterion type \"" + type + "\""};
 }
