@@ -150,11 +150,11 @@ JsonParseResult parseSymbolToken(std::shared_ptr<Token>& token, const rapidjson:
         return {JsonParseReturnCode::kInvalidType, "Token of type \"" + g_TYPE_SYMBOL + "\" must have a string value" };
     }
     const std::string& name = value.GetString();
-    if(symbols.find(name) == symbols.end()) {
+    auto got = symbols.find(name);
+    if(got == symbols.end()) {
         return {JsonParseReturnCode::kMissingSymbol, "Symbol not defined: \"" + name + "\"" };
     }
-    // TODO: Not sure if this needs to be wrapped in an std::shared_ptr for copying or not
-    token = symbols.at(name);
+    token = got->second;
     return JsonUtils::g_RESULT_SUCCESS;
 }
 

@@ -43,6 +43,7 @@ struct ParsedGroup {
 struct QueuedGroup {
     rapidjson::Value& value;
     std::string name;
+    std::string path;
     std::string parentName;
 };
 
@@ -209,18 +210,66 @@ JsonParseResult readGroup(ParsedData& parsedData, const std::string& path, bool 
         if(result.code != JsonParseReturnCode::kSuccess) {
             return result;
         }
-        if(parsedData.parsedGroups.find(parentName) == parsedData.parsedGroups.end()) {
+        auto got = parsedData.parsedGroups.find(parentName);
+        if(got == parsedData.parsedGroups.end()) {
             if(!allowMissingParent) {
                 // Parent is not loaded yet, add to queue
-                parsedData.queuedGroups.push({document, name, parentName});
+                parsedData.queuedGroups.push({document, name, path, parentName});
                 return {JsonParseReturnCode::kSkipCreation, ""};
             }
         } else {
-            parsedParent = parsedData.parsedGroups.at(parentName);
+            parsedParent = got->second;
         }
     }
 
     return parseGroup(parsedData, document, name, parsedParent);
+}
+
+void resolveQueuedGroups(ParsedData& parsedData) {
+    // There's probably a less brute-force way to do this
+    // But do I look that fancy?
+    auto& queue = parsedData.queuedGroups;
+    size_t checkAfter = queue.size();
+    bool changed = false;
+
+    while(!queue.empty()) {
+        const auto& item = queue.front();
+
+        auto got = parsedData.parsedGroups.find(item.parentName);
+        if(got == parsedData.parsedGroups.end()) {
+            // Parent still not loaded, add back to queue
+            queue.push(item);
+        } else {
+            // Parent now loaded, proceed with parsing group
+            auto result = parseGroup(parsedData, item.value, item.name, got->second);
+            if(result.code == JsonParseReturnCode::kSuccess) {
+                std::cout << "Successfully parsed " << item.path << "\n";
+                ++parsedData.stats.numLoaded;
+            } else if(result.code != JsonParseReturnCode::kSkipCreation) {
+                std::cerr << "Failed to parse " << item.path << ": " << result.errorMsg << "\n";
+                ++parsedData.stats.numFailed;
+            }
+            changed = true;
+        }
+        queue.pop();    // Make sure to pop only AFTER we're done using the item
+
+        // After going through the entire queue once, check if any groups were
+        // successfully loaded. If not, then all that's left are missing/circular
+        // dependencies.
+        if(--checkAfter == 0) {
+            if(!changed) {
+                // Gather list of all failed groups
+                while(!queue.empty()) {
+                    const auto& failedItem = queue.front();
+                    std::cerr << "Failed to parse " << failedItem.path << ": Unknown parent \"" + failedItem.parentName + "\" (is it missing or circular reference)?\n";
+                    queue.pop();
+                }
+            }
+            // Reset counters--probably leads to some repetitions if there are multiple successes in a loop but oh well
+            checkAfter = queue.size();
+            changed = false;
+        }
+    }
 }
 
 void readAllFiles(ParsedData& parsedData, const std::string& dirPath) {
@@ -233,25 +282,18 @@ void readAllFiles(ParsedData& parsedData, const std::string& dirPath) {
     for (const auto& file : dir) {
         const std::string& extension = file.path().extension().string();
         if(extension == g_EXT_JSON) {
-            const std::string& pathStr = file.path().string();
-            JsonParseResult result = readGroup(parsedData, pathStr, false);
+            const std::string& path = file.path().string();
+            auto result = readGroup(parsedData, path, false);
             if(result.code == JsonParseReturnCode::kSuccess) {
-                std::cout << "Successfully parsed " << pathStr << "\n";
+                std::cout << "Successfully parsed " << path << "\n";
                 ++parsedData.stats.numLoaded;
             } else if(result.code != JsonParseReturnCode::kSkipCreation) {
-                std::cerr << "Failed to parse " << pathStr << ": " << result.errorMsg << "\n";
+                std::cerr << "Failed to parse " << path << ": " << result.errorMsg << "\n";
                 ++parsedData.stats.numFailed;
             }
         }
     }
-}
-
-void resolveQueuedGroups(ParsedData& parsedData) {
-    if(parsedData.queuedGroups.empty()) {
-        return;
-    }
-
-    // TODO
+    resolveQueuedGroups(parsedData);
 }
 
 }
@@ -264,7 +306,6 @@ JsonParseResult loadGroup(RuleDatabase& database, const std::string& path) {
 DatabaseStats loadDatabase(RuleDatabase& database, const std::string& dirPath) {
     ParsedData parsedData {database};
     readAllFiles(parsedData, dirPath);
-    resolveQueuedGroups(parsedData);
     return parsedData.stats;
 }
 

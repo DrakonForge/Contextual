@@ -294,10 +294,11 @@ JsonParseResult parseNamedCriterion(std::vector<std::shared_ptr<Criteria>>& crit
         return {JsonParseReturnCode::kInvalidType, "Named criterion must have a string value"};
     }
     const std::string& name = value.GetString();
-    if(namedRules.find(name) == namedRules.end()) {
+    auto got = namedRules.find(name);
+    if(got == namedRules.end()) {
         return {JsonParseReturnCode::kMissingRule, "Rule with name \"" + name + "\" does not exist in this hierarchy"};
     }
-    const RuleInfo& ruleInfo = namedRules.at(name);
+    const RuleInfo& ruleInfo = got->second;
     criteria.insert(criteria.end(), ruleInfo.criteria.begin(), ruleInfo.criteria.end());
     priority += ruleInfo.priority;
     return JsonUtils::g_RESULT_SUCCESS;

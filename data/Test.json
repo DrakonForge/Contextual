@@ -1,6 +1,5 @@
 {
   "Name": "Person",
-  "Type": "Speechbank",
   "Symbols": [
     {
       "Name": "name",

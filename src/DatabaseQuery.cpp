@@ -8,10 +8,11 @@ DatabaseQuery::DatabaseQuery() {
 
 std::shared_ptr<ContextTable> DatabaseQuery::getContextTable(
     const std::string& tableName) const {
-    if(m_contexts.find(tableName) == m_contexts.end()) {
+    auto got = m_contexts.find(tableName);
+    if(got == m_contexts.end()) {
         return nullptr;
     }
-    return m_contexts.at(tableName);
+    return got->second;
 }
 
 void DatabaseQuery::setWillFail(DatabaseQuery::WillFail value) {

@@ -11,19 +11,21 @@ StringTable::StringTable() {
 }
 
 int StringTable::cache(const std::string& str) {
-    if (m_cache.find(str) == m_cache.end()) {
+    auto got = m_cache.find(str);
+    if (got == m_cache.end()) {
         m_cache.insert({ str, m_nextId});
         m_lookup.insert({m_nextId, str});
         return m_nextId++;
     }
-    return m_cache.at(str);
+    return got->second;
 }
 
 std::optional<std::string> StringTable::lookup(int symbol) const {
-    if (m_lookup.find(symbol) == m_lookup.end()) {
+    auto got = m_lookup.find(symbol);
+    if (got == m_lookup.end()) {
         return std::nullopt;
     }
-    return m_lookup.at(symbol);
+    return got->second;
 }
 
 size_t StringTable::getSize() const {

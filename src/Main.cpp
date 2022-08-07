@@ -57,6 +57,7 @@ void testDatabaseLoading() {
     std::cout << "# Tables: " << stats.numTables << "\n";
     std::cout << "# Rules: " << stats.numRules << "\n";
     std::cout << "# Criteria Objects: " << Contextual::Criterion::getCount() << "\n";
+    std::cout << "StringTable Size: " << contextManager.getStringTable().getSize() << "\n";
 
     std::cout << "\n";
     const std::unique_ptr<Contextual::RuleTable>& table = database.getRuleTable("Person", "Interact");

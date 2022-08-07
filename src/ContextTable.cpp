@@ -121,18 +121,20 @@ FactType ContextTable::getType(const std::string& key) const {
     if (m_listContext && m_listContext->find(key) != m_listContext->end()) {
         return FactType::kList;
     }
-    if (m_basicContext.find(key) == m_basicContext.end()) {
+    auto got = m_basicContext.find(key);
+    if (got == m_basicContext.end()) {
         return FactType::kNull;
     }
-    const FactTuple& tuple = m_basicContext.at(key);
+    const FactTuple& tuple = got->second;
     return tuple.type;
 }
 
 std::optional<float> ContextTable::getRawValue(const std::string& key) const {
-    if(m_basicContext.find(key) == m_basicContext.end()) {
+    auto got = m_basicContext.find(key);
+    if(got == m_basicContext.end()) {
         return std::nullopt;
     }
-    const FactTuple& tuple = m_basicContext.at(key);
+    const FactTuple& tuple = got->second;
     return tuple.value;
 }
 
@@ -143,10 +145,11 @@ bool ContextTable::hasKey(const std::string& key) const {
 
 std::optional<ContextTable::FactTuple> ContextTable::getTuple(
     const std::string& key, const FactType type) const {
-    if (m_basicContext.find(key) == m_basicContext.end()) {
+    auto got = m_basicContext.find(key);
+    if (got == m_basicContext.end()) {
         return std::nullopt;
     }
-    const FactTuple& tuple = m_basicContext.at(key);
+    const FactTuple& tuple = got->second;
     if (tuple.type != type) {
         return std::nullopt;
     }

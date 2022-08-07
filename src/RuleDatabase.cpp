@@ -27,10 +27,11 @@ RuleDatabaseReturnCode RuleDatabase::addRuleTable(const std::string& group,
 const std::unique_ptr<RuleTable>& RuleDatabase::getRuleTable(
     const std::string& group, const std::string& category) const {
     GroupCategory groupCategory = { group, category };
-    if(m_groupCategoryToTable.find(groupCategory) == m_groupCategoryToTable.end()) {
+    auto got = m_groupCategoryToTable.find(groupCategory);
+    if(got == m_groupCategoryToTable.end()) {
         return g_NOT_FOUND;
     }
-    return m_groupCategoryToTable.at(groupCategory);
+    return got->second;
 }
 
 ContextManager& RuleDatabase::getContextManager() {
