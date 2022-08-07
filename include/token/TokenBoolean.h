@@ -1,10 +1,10 @@
 #pragma once
 
-#include "Token.h"
+#include "SymbolToken.h"
 
 namespace Contextual {
 
-class TokenBoolean : public Token {
+class TokenBoolean : public SymbolToken {
 public:
     explicit TokenBoolean(bool value);
     [[nodiscard]] std::optional<std::string> evaluate(const DatabaseQuery& query) const override;

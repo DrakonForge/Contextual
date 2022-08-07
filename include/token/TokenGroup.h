@@ -3,17 +3,17 @@
 #include <memory>
 #include <vector>
 
-#include "Token.h"
+#include "SymbolToken.h"
 
 // TODO this has more to do with speech/text than symbols, ignore this class for now
 namespace Contextual {
 
-class TokenGroup : public Token {
+class TokenGroup : public SymbolToken {
 public:
-    explicit TokenGroup(std::vector<std::shared_ptr<Token>> tokens);
+    explicit TokenGroup(std::vector<std::shared_ptr<SymbolToken>> tokens);
     [[nodiscard]] std::optional<std::string> evaluate(const DatabaseQuery& query) const override;
 private:
-    const std::vector<std::shared_ptr<Token>> m_tokens;
+    const std::vector<std::shared_ptr<SymbolToken>> m_tokens;
 };
 
 }

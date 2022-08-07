@@ -5,7 +5,10 @@
 #include "ContextTable.h"
 #include "DatabaseParser.h"
 #include "RuleDatabase.h"
+#include "SpeechToken.h"
+#include "SpeechTokenizer.h"
 #include "StringTable.h"
+#include "SymbolToken.h"
 
 void print(std::unordered_set<int> const &s)
 {
@@ -64,7 +67,23 @@ void testDatabaseLoading() {
     std::cout << "Nullptr: " << (table == nullptr) << "\n";
 }
 
+void testTextParsing() {
+    std::vector<std::shared_ptr<Contextual::SpeechToken>> tokens;
+    const std::unordered_map<std::string, std::shared_ptr<Contextual::SymbolToken>> symbols;
+    const std::unordered_map<std::string, std::shared_ptr<Contextual::SymbolToken>> localSymbols;
+
+    std::string text = "*Hello, world!*";
+    auto result = Contextual::SpeechTokenizer::tokenize(tokens, text, symbols, localSymbols);
+    if(result.code == Contextual::SpeechTokenizerReturnCode::kSuccess) {
+        std::cout << "Success" << "\n";
+    } else {
+        std::cerr << "Error: " << result.errorMsg << "\n";
+    }
+    std::cout << "# Tokens: " << tokens.size() << "\n";
+}
+
 int main() {
-    testDatabaseLoading();
+    testTextParsing();
+    //testDatabaseLoading();
     return 0;
 }

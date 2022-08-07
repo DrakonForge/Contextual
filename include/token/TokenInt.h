@@ -1,10 +1,10 @@
 #pragma once
 
-#include "Token.h"
+#include "SymbolToken.h"
 
 namespace Contextual {
 
-class TokenInt : public Token {
+class TokenInt : public SymbolToken {
 public:
     TokenInt(int value);
     [[nodiscard]] std::optional<std::string> evaluate(const DatabaseQuery& query) const override;

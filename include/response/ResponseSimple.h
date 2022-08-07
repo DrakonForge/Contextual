@@ -9,9 +9,9 @@ namespace Contextual {
 
 class ResponseSimple : public Response {
 public:
-    ResponseSimple(std::vector<std::string> options);
-    const std::string& getRandomOption() const;
-    const std::vector<std::string>& getOptions() const;
+    explicit ResponseSimple(std::vector<std::string> options);
+    [[nodiscard]] const std::string& getRandomOption() const;
+    [[nodiscard]] const std::vector<std::string>& getOptions() const;
 private:
     const std::vector<std::string> m_options;
 

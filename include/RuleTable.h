@@ -15,7 +15,7 @@ struct Criteria {
     std::string table;
     std::string key;
     std::shared_ptr<Criterion> criterion;
-    Criteria(std::string pTable, std::string pKey, std::shared_ptr<Criterion> pCriterion) : table(std::move(pTable)), key(std::move(pKey)), criterion(std::move(pCriterion)) {}
+    Criteria(std::string table, std::string key, std::shared_ptr<Criterion> criterion) : table(std::move(table)), key(std::move(key)), criterion(std::move(criterion)) {}
 };
 
 struct RuleEntry {

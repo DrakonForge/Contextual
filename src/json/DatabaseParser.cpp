@@ -12,7 +12,7 @@
 #include "JsonUtils.h"
 #include "RuleParser.h"
 #include "SymbolParser.h"
-#include "token/Token.h"
+#include "token/SymbolToken.h"
 
 namespace Contextual::RuleParser {
 
@@ -36,7 +36,7 @@ const std::string g_EXT_JSON = ".json";
 // Structs
 
 struct ParsedGroup {
-    std::unordered_map<std::string, std::shared_ptr<Token>> symbols;
+    std::unordered_map<std::string, std::shared_ptr<SymbolToken>> symbols;
     std::unordered_map<std::string, RuleParser::RuleInfo> namedRules;
 };
 
@@ -80,7 +80,7 @@ JsonParseResult getParsingType(ParsingType& type, const rapidjson::Value& root) 
     return JsonUtils::g_RESULT_SUCCESS;
 }
 
-JsonParseResult parseCategory(ParsedData& parsedData, std::unordered_map<std::string, RuleParser::RuleInfo>& namedRules, const ParsingType parsingType, const rapidjson::Value& root, const std::unordered_map<std::string, std::shared_ptr<Token>>& symbols, const std::string& groupName) {
+JsonParseResult parseCategory(ParsedData& parsedData, std::unordered_map<std::string, RuleParser::RuleInfo>& namedRules, const ParsingType parsingType, const rapidjson::Value& root, const std::unordered_map<std::string, std::shared_ptr<SymbolToken>>& symbols, const std::string& groupName) {
     if(!root.IsObject()) {
         return {JsonParseReturnCode::kInvalidType, "Category must be a JSON object"};
     }
@@ -130,7 +130,7 @@ JsonParseResult parseCategory(ParsedData& parsedData, std::unordered_map<std::st
     return JsonUtils::g_RESULT_SUCCESS;
 }
 
-JsonParseResult parseCategories(ParsedData& parsedData, std::unordered_map<std::string, RuleParser::RuleInfo>& namedRules, const ParsingType parsingType, const rapidjson::Value& root, const std::unordered_map<std::string, std::shared_ptr<Token>>& symbols, const std::string& groupName) {
+JsonParseResult parseCategories(ParsedData& parsedData, std::unordered_map<std::string, RuleParser::RuleInfo>& namedRules, const ParsingType parsingType, const rapidjson::Value& root, const std::unordered_map<std::string, std::shared_ptr<SymbolToken>>& symbols, const std::string& groupName) {
     if (root.HasMember(g_KEY_CATEGORIES)) {
         const auto& value = root[g_KEY_CATEGORIES];
         if (!value.IsArray()) {
@@ -155,7 +155,7 @@ JsonParseResult parseGroup(ParsedData& parsedData, const rapidjson::Value& root,
     }
 
     // Symbols
-    std::unordered_map<std::string, std::shared_ptr<Token>> symbols;
+    std::unordered_map<std::string, std::shared_ptr<SymbolToken>> symbols;
     // Simple groups do not use symbols
     if(parsingType != ParsingType::kSimple) {
         // Copy over parent symbols
@@ -259,6 +259,7 @@ void resolveQueuedGroups(ParsedData& parsedData) {
         if(--checkAfter == 0) {
             if(!changed) {
                 // Gather list of all failed groups
+                parsedData.stats.numFailed += queue.size();
                 while(!queue.empty()) {
                     const auto& failedItem = queue.front();
                     std::cerr << "Failed to parse " << failedItem.path << ": Unknown parent \"" + failedItem.parentName + "\" (is it missing or circular reference)?\n";

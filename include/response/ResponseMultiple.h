@@ -9,8 +9,8 @@ namespace Contextual {
 
 class ResponseMultiple : public Response {
 public:
-    ResponseMultiple(std::vector<std::shared_ptr<Response>> responses);
-    const std::vector<std::shared_ptr<Response>> getResponses() const;
+    explicit ResponseMultiple(std::vector<std::shared_ptr<Response>> responses);
+    [[nodiscard]] const std::vector<std::shared_ptr<Response>> getResponses() const;
 private:
     const std::vector<std::shared_ptr<Response>> m_responses;
 };

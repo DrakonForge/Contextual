@@ -17,7 +17,6 @@ set(SOURCES
         src/json/SymbolParser.cpp
         src/json/RuleParser.cpp
         src/json/JsonUtils.cpp
-        src/token/Token.cpp
         src/token/TokenBoolean.cpp
         src/token/TokenContext.cpp
         src/token/TokenString.cpp
@@ -39,12 +38,15 @@ set(SOURCES
         src/criterion/CriterionAlternate.cpp
         src/criterion/CriterionDynamic.cpp
         src/response/ResponseSimple.cpp
-        src/response/ResponseMultiple.cpp)
+        src/response/ResponseMultiple.cpp
+        src/speech/SpeechTokenizer.cpp
+        )
 set(INCLUDE_DIR
         ${CMAKE_SOURCE_DIR}/include
         ${CMAKE_SOURCE_DIR}/include/json
         ${CMAKE_SOURCE_DIR}/include/criterion
         ${CMAKE_SOURCE_DIR}/include/token
+        ${CMAKE_SOURCE_DIR}/include/speech
         ${RAPIDJSON_INCLUDE_DIR})
 
 add_executable(${EXECUTABLE_NAME} ${SOURCES})

@@ -441,7 +441,7 @@ JsonParseResult parseCriteria(std::vector<std::shared_ptr<Criteria>>& criteria, 
     return JsonUtils::g_RESULT_SUCCESS;
 }
 
-JsonParseResult parseSpeechResponse(std::shared_ptr<Response>& response, const rapidjson::Value& value, const std::unordered_map<std::string, std::shared_ptr<Token>>& symbols, const std::unordered_map<std::string, std::shared_ptr<Token>>& localSymbols) {
+JsonParseResult parseSpeechResponse(std::shared_ptr<Response>& response, const rapidjson::Value& value, const std::unordered_map<std::string, std::shared_ptr<SymbolToken>>& symbols, const std::unordered_map<std::string, std::shared_ptr<SymbolToken>>& localSymbols) {
     // TODO: Tokenize in SpeechParser
     return JsonUtils::g_RESULT_SUCCESS;
 }
@@ -462,7 +462,7 @@ JsonParseResult parseSimpleResponse(std::shared_ptr<Response>& response, const r
     return JsonUtils::g_RESULT_SUCCESS;
 }
 
-JsonParseResult parseResponseObject(std::shared_ptr<Response>& response, const rapidjson::Value& root, const ParsingType parsingType, const std::unordered_map<std::string, std::shared_ptr<Token>>& symbols, const std::unordered_map<std::string, std::shared_ptr<Token>>& localSymbols) {
+JsonParseResult parseResponseObject(std::shared_ptr<Response>& response, const rapidjson::Value& root, const ParsingType parsingType, const std::unordered_map<std::string, std::shared_ptr<SymbolToken>>& symbols, const std::unordered_map<std::string, std::shared_ptr<SymbolToken>>& localSymbols) {
     if(!root.IsObject()) {
         return {JsonParseReturnCode::kInvalidType, "Response must be a JSON object"};
     }
@@ -490,7 +490,7 @@ JsonParseResult parseResponseObject(std::shared_ptr<Response>& response, const r
     return {JsonParseReturnCode::kInvalidValue, "Unknown response type \"" + g_KEY_RESPONSE_TYPE + "\""};
 }
 
-JsonParseResult parseResponse(std::shared_ptr<Response>& response, const rapidjson::Value& root, const ParsingType parsingType, const std::unordered_map<std::string, std::shared_ptr<Token>>& symbols, const std::unordered_map<std::string, std::shared_ptr<Token>>& localSymbols) {
+JsonParseResult parseResponse(std::shared_ptr<Response>& response, const rapidjson::Value& root, const ParsingType parsingType, const std::unordered_map<std::string, std::shared_ptr<SymbolToken>>& symbols, const std::unordered_map<std::string, std::shared_ptr<SymbolToken>>& localSymbols) {
     if(root.HasMember(g_KEY_RESPONSE)) {
         const auto& value = root[g_KEY_RESPONSE];
         if(!value.IsArray()) {
@@ -527,7 +527,7 @@ JsonParseResult parseRule(
     std::unique_ptr<RuleEntry>& rule,
     std::unordered_map<std::string, RuleInfo>& namedRules, int& nextId,
     const rapidjson::Value& root, const std::string& idPrefix, const ParsingType parsingType,
-    const std::unordered_map<std::string, std::shared_ptr<Token>>& symbols) {
+    const std::unordered_map<std::string, std::shared_ptr<SymbolToken>>& symbols) {
 
     if(!root.IsObject()) {
         return {JsonParseReturnCode::kInvalidType, "Rule must be a JSON object" };
@@ -541,7 +541,7 @@ JsonParseResult parseRule(
     }
 
     // Reads local symbols from key "Symbols" if it exists
-    std::unordered_map<std::string, std::shared_ptr<Token>> localSymbols;
+    std::unordered_map<std::string, std::shared_ptr<SymbolToken>> localSymbols;
     result = SymbolParser::parseSymbols(localSymbols, root);
 
     std::shared_ptr<Response> response;

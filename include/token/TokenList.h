@@ -3,16 +3,16 @@
 #include <memory>
 #include <vector>
 
-#include "Token.h"
+#include "SymbolToken.h"
 
 namespace Contextual {
 
-class TokenList : public Token {
+class TokenList : public SymbolToken {
 public:
-    explicit TokenList(std::vector<std::shared_ptr<Token>> tokens);
+    explicit TokenList(std::vector<std::shared_ptr<SymbolToken>> tokens);
     [[nodiscard]] std::optional<std::string> evaluate(const DatabaseQuery& query) const override;
 private:
-    const std::vector<std::shared_ptr<Token>> m_tokens;
+    const std::vector<std::shared_ptr<SymbolToken>> m_tokens;
 };
 
 }
