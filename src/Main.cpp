@@ -67,23 +67,45 @@ void testDatabaseLoading() {
     std::cout << "Nullptr: " << (table == nullptr) << "\n";
 }
 
-void testTextParsing() {
+
+void testTextParsing(const std::string& str) {
     std::vector<std::shared_ptr<Contextual::SpeechToken>> tokens;
     const std::unordered_map<std::string, std::shared_ptr<Contextual::SymbolToken>> symbols;
     const std::unordered_map<std::string, std::shared_ptr<Contextual::SymbolToken>> localSymbols;
 
-    std::string text = "*Hello, world!*";
-    auto result = Contextual::SpeechTokenizer::tokenize(tokens, text, symbols, localSymbols);
+    std::cout << "Target string: \"" << str << "\"" << "\n";
+    auto result = Contextual::SpeechTokenizer::tokenize(tokens, str, symbols, localSymbols);
     if(result.code == Contextual::SpeechTokenizerReturnCode::kSuccess) {
-        std::cout << "Success" << "\n";
+        std::cout << "Success!" << "\n";
     } else {
-        std::cerr << "Error: " << result.errorMsg << "\n";
+        std::cout << "Error: " << result.errorMsg << "\n";
     }
-    std::cout << "# Tokens: " << tokens.size() << "\n";
+    std::cout << "Tokenization: ";
+    for(const auto& token : tokens) {
+        std::cout << token->toString();
+    }
+    std::cout << "\n\n";
+}
+
+void testTextParsingMany() {
+    testTextParsing("Hello world!");
+    testTextParsing("*Hello world!*");
+    testTextParsing("{speed=5}Hello, {speed=1}#Speaker.Name!");
+    testTextParsing("Hello there...____ old friend.");
+    testTextParsing("Hello there!/General Kenobi!");
+    testTextParsing("Hello world!__ ");
+
+    // Should fail
+    testTextParsing("*Hello world!");
+    testTextParsing("{Hello world!");
+    testTextParsing("Hello world!/");
+    testTextParsing("Hello world!_");
+    testTextParsing("Hello world! _");
+    testTextParsing("{italics=true}Hello world!{italics=false}");
 }
 
 int main() {
-    testTextParsing();
+    testTextParsingMany();
     //testDatabaseLoading();
     return 0;
 }

@@ -131,6 +131,9 @@ JsonParseResult parseListToken(std::shared_ptr<SymbolToken>& token, const rapidj
     if(!value.IsArray()) {
         return {JsonParseReturnCode::kInvalidType, "SymbolToken of type \"" + g_TYPE_LIST + "\" must have an array value" };
     }
+    if(value.Empty()) {
+        return {JsonParseReturnCode::kInvalidValue, "List token cannot be empty"};
+    }
     std::vector<std::shared_ptr<SymbolToken>> items;
     items.reserve(value.Size());
     for(auto iter = value.Begin(); iter != value.End(); ++iter) {

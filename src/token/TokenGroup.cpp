@@ -19,5 +19,6 @@ std::optional<std::string> TokenGroup::evaluate(const DatabaseQuery& query) cons
     }
     return result;
 }
+std::string TokenGroup::toString() const { return ""; }
 
 }

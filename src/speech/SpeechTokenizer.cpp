@@ -119,6 +119,7 @@ SpeechTokenizerResult tokenizeSymbol(int& index, std::vector<std::shared_ptr<Spe
 SpeechTokenizerResult tokenizeContext(int& index, std::vector<std::shared_ptr<SpeechToken>>& tokens, const std::string& text) {
     std::string table;
     char c;
+    ++index;
     // Parse table
     while(index < text.size()) {
         c = text[index];
@@ -143,7 +144,7 @@ SpeechTokenizerResult tokenizeContext(int& index, std::vector<std::shared_ptr<Sp
     while(index < text.size()) {
         c = text[index];
         if(isIdChar(c)) {
-            table.push_back(c);
+            key.push_back(c);
             ++index;
         } else {
             break;
@@ -327,7 +328,6 @@ SpeechTokenizerResult tokenize(std::vector<std::shared_ptr<SpeechToken>>& tokens
     bool consumeSpaces = false;
 
     while(index < text.size()) {
-        std::cout << index << " " << italics << " " << bold << std::endl;
         char c = text[index];
 
         // Continue consuming spaces if the character is a space
@@ -411,7 +411,6 @@ SpeechTokenizerResult tokenize(std::vector<std::shared_ptr<SpeechToken>>& tokens
             nextString.push_back(c);
             ++index;
         }
-        std::cout << index << " " << italics << " " << bold << std::endl;
     }
 
     // Last character

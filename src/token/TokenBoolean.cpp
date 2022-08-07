@@ -8,5 +8,12 @@ std::optional<std::string> TokenBoolean::evaluate(const DatabaseQuery& query) co
     // Boolean tokens should not be evaluated to string
     return std::nullopt;
 }
+std::string TokenBoolean::toString() const {
+    if(m_value) {
+        return "[Boolean=true]";
+    } else {
+        return "[Boolean=false]";
+    }
+}
 
 }

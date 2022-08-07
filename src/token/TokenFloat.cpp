@@ -9,5 +9,8 @@ std::optional<std::string> TokenFloat::evaluate(const DatabaseQuery& query) cons
     int intValue = static_cast<int>(m_value);
     return std::to_string(intValue);
 }
+std::string TokenFloat::toString() const {
+    return "[Float=" + std::to_string(m_value) + "]";
+}
 
 }
