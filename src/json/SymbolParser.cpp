@@ -1,4 +1,4 @@
-#include "TokenParser.h"
+#include "SymbolParser.h"
 
 #include <vector>
 
@@ -11,17 +11,18 @@
 #include "token/TokenList.h"
 #include "token/TokenString.h"
 
-namespace Contextual::TokenParser {
+namespace Contextual::SymbolParser {
 
 namespace {
 
 const std::string g_KEY_TYPE = "Type";
 const std::string g_KEY_VALUE = "Value";
-
 const std::string g_KEY_CONTEXT_TABLE = "Table";
 const std::string g_KEY_CONTEXT_KEY = "Key";
 const std::string g_KEY_FUNCTION_NAME = "Name";
 const std::string g_KEY_FUNCTION_ARGS = "Args";
+const std::string g_KEY_SYMBOLS = "Symbols";
+const std::string g_KEY_SYMBOL_NAME = "Name";
 
 const std::string g_TYPE_BOOLEAN = "Boolean";
 const std::string g_TYPE_FLOAT = "Float";
@@ -32,7 +33,10 @@ const std::string g_TYPE_FUNCTION = "Function";
 const std::string g_TYPE_LIST = "List";
 const std::string g_TYPE_SYMBOL = "Symbol";
 
-JsonParseResult parseBool(std::shared_ptr<Token>& token, const rapidjson::Value& value) {
+// Forward declare this so it can be used recursively
+JsonParseResult parseToken(std::shared_ptr<Token>& token, const rapidjson::Value& root, const std::unordered_map<std::string, std::shared_ptr<Token>>& symbols);
+
+JsonParseResult parseBoolToken(std::shared_ptr<Token>& token, const rapidjson::Value& value) {
     if(!value.IsBool()) {
         return {JsonParseReturnCode::kInvalidType, "Token of type \"" + g_TYPE_BOOLEAN + "\" must have a boolean value" };
     }
@@ -40,7 +44,7 @@ JsonParseResult parseBool(std::shared_ptr<Token>& token, const rapidjson::Value&
     return JsonUtils::g_RESULT_SUCCESS;
 }
 
-JsonParseResult parseFloat(std::shared_ptr<Token>& token, const rapidjson::Value& value) {
+JsonParseResult parseFloatToken(std::shared_ptr<Token>& token, const rapidjson::Value& value) {
     if(!value.IsNumber()) {
         return {JsonParseReturnCode::kInvalidType, "Token of type \"" + g_TYPE_FLOAT + "\" must have a numerical value" };
     }
@@ -48,7 +52,7 @@ JsonParseResult parseFloat(std::shared_ptr<Token>& token, const rapidjson::Value
     return JsonUtils::g_RESULT_SUCCESS;
 }
 
-JsonParseResult parseInt(std::shared_ptr<Token>& token, const rapidjson::Value& value) {
+JsonParseResult parseIntToken(std::shared_ptr<Token>& token, const rapidjson::Value& value) {
     if(!value.IsNumber()) {
         return {JsonParseReturnCode::kInvalidType, "Token of type \"" + g_TYPE_INTEGER + "\" must have a numerical value" };
     }
@@ -56,7 +60,7 @@ JsonParseResult parseInt(std::shared_ptr<Token>& token, const rapidjson::Value& 
     return JsonUtils::g_RESULT_SUCCESS;
 }
 
-JsonParseResult parseString(std::shared_ptr<Token>& token, const rapidjson::Value& value) {
+JsonParseResult parseStringToken(std::shared_ptr<Token>& token, const rapidjson::Value& value) {
     if(!value.IsString()) {
         return {JsonParseReturnCode::kInvalidType, "Token of type \"" + g_TYPE_STRING + "\" must have a string value" };
     }
@@ -64,7 +68,7 @@ JsonParseResult parseString(std::shared_ptr<Token>& token, const rapidjson::Valu
     return JsonUtils::g_RESULT_SUCCESS;
 }
 
-JsonParseResult parseContext(std::shared_ptr<Token>& token, const rapidjson::Value& value) {
+JsonParseResult parseContextToken(std::shared_ptr<Token>& token, const rapidjson::Value& value) {
     if(!value.IsObject()) {
         return {JsonParseReturnCode::kInvalidType, "Token of type \"" + g_TYPE_CONTEXT + "\" must have an object value" };
     }
@@ -90,7 +94,7 @@ JsonParseResult parseContext(std::shared_ptr<Token>& token, const rapidjson::Val
     return JsonUtils::g_RESULT_SUCCESS;
 }
 
-JsonParseResult parseFunction(std::shared_ptr<Token>& token, const rapidjson::Value& value, const std::unordered_map<std::string, std::shared_ptr<Token>>& symbols) {
+JsonParseResult parseFunctionToken(std::shared_ptr<Token>& token, const rapidjson::Value& value, const std::unordered_map<std::string, std::shared_ptr<Token>>& symbols) {
     if(!value.IsObject()) {
         return {JsonParseReturnCode::kInvalidType, "Token of type \"" + g_TYPE_FUNCTION + "\" must have an object value" };
     }
@@ -123,7 +127,7 @@ JsonParseResult parseFunction(std::shared_ptr<Token>& token, const rapidjson::Va
     return JsonUtils::g_RESULT_SUCCESS;
 }
 
-JsonParseResult parseList(std::shared_ptr<Token>& token, const rapidjson::Value& value, const std::unordered_map<std::string, std::shared_ptr<Token>>& symbols) {
+JsonParseResult parseListToken(std::shared_ptr<Token>& token, const rapidjson::Value& value, const std::unordered_map<std::string, std::shared_ptr<Token>>& symbols) {
     if(!value.IsArray()) {
         return {JsonParseReturnCode::kInvalidType, "Token of type \"" + g_TYPE_LIST + "\" must have an array value" };
     }
@@ -141,7 +145,7 @@ JsonParseResult parseList(std::shared_ptr<Token>& token, const rapidjson::Value&
     return JsonUtils::g_RESULT_SUCCESS;
 }
 
-JsonParseResult parseSymbol(std::shared_ptr<Token>& token, const rapidjson::Value& value, const std::unordered_map<std::string, std::shared_ptr<Token>>& symbols) {
+JsonParseResult parseSymbolToken(std::shared_ptr<Token>& token, const rapidjson::Value& value, const std::unordered_map<std::string, std::shared_ptr<Token>>& symbols) {
     if(!value.IsString()) {
         return {JsonParseReturnCode::kInvalidType, "Token of type \"" + g_TYPE_SYMBOL + "\" must have a string value" };
     }
@@ -152,8 +156,6 @@ JsonParseResult parseSymbol(std::shared_ptr<Token>& token, const rapidjson::Valu
     // TODO: Not sure if this needs to be wrapped in an std::shared_ptr for copying or not
     token = symbols.at(name);
     return JsonUtils::g_RESULT_SUCCESS;
-}
-
 }
 
 JsonParseResult parseToken(std::shared_ptr<Token>& token, const rapidjson::Value& root, const std::unordered_map<std::string, std::shared_ptr<Token>>& symbols) {
@@ -174,25 +176,70 @@ JsonParseResult parseToken(std::shared_ptr<Token>& token, const rapidjson::Value
     const auto& value = root[g_KEY_VALUE];
 
     if(type == g_TYPE_BOOLEAN) {
-        result = parseBool(token, value);
+        result = parseBoolToken(token, value);
     } else if(type == g_TYPE_FLOAT) {
-        result = parseFloat(token, value);
+        result = parseFloatToken(token, value);
     } else if(type == g_TYPE_INTEGER) {
-        result = parseInt(token, value);
+        result = parseIntToken(token, value);
     } else if(type == g_TYPE_STRING) {
-        result = parseString(token, value);
+        result = parseStringToken(token, value);
     } else if(type == g_TYPE_CONTEXT) {
-        result = parseContext(token, value);
+        result = parseContextToken(token, value);
     } else if(type == g_TYPE_FUNCTION) {
-        result = parseFunction(token, value, symbols);
+        result = parseFunctionToken(token, value, symbols);
     } else if(type == g_TYPE_LIST) {
-        result = parseList(token, value, symbols);
+        result = parseListToken(token, value, symbols);
     } else if(type == g_TYPE_SYMBOL) {
-        result = parseSymbol(token, value, symbols);
+        result = parseSymbolToken(token, value, symbols);
     } else {
         return {JsonParseReturnCode::kInvalidValue, "Invalid token type \"" + type + "\""};
     }
     return result;
+}
+
+JsonParseResult parseSymbol(std::unordered_map<std::string, std::shared_ptr<Token>>& symbols, const rapidjson::Value& root) {
+    if (!root.IsObject()) {
+        return {JsonParseReturnCode::kInvalidType, "Symbol must be a JSON object" };
+    }
+    if(!root.HasMember(g_KEY_SYMBOL_NAME)) {
+        return {JsonParseReturnCode::kMissingKey, "Symbol must specify key \"" + g_KEY_SYMBOL_NAME + "\"" };
+    }
+
+    std::string name;
+    auto result = JsonUtils::getString(name, root, g_KEY_SYMBOL_NAME);
+    if (result.code != JsonParseReturnCode::kSuccess) {
+        return result;
+    }
+    if(symbols.find(name) != symbols.end()) {
+        return {JsonParseReturnCode::kAlreadyDefined, "Symbol \"" + name + "\" is already defined" };
+    }
+
+    std::shared_ptr<Token> token;
+    result = parseToken(token, root, symbols);
+    if (result.code != JsonParseReturnCode::kSuccess) {
+        return result;
+    }
+    symbols.insert({name, token});
+    return JsonUtils::g_RESULT_SUCCESS;
+}
+
+}
+
+JsonParseResult parseSymbols(std::unordered_map<std::string, std::shared_ptr<Token>>& symbols, const rapidjson::Value& root) {
+    if(root.HasMember(g_KEY_SYMBOLS)) {
+        const auto& value = root[g_KEY_SYMBOLS];
+        if(!value.IsArray()) {
+            return {JsonParseReturnCode::kInvalidType, "Key \"" + g_KEY_SYMBOLS + "\" must be an array" };
+        }
+        for(auto iter = value.Begin(); iter != value.End(); ++iter) {
+            auto result = parseSymbol(symbols, *iter);
+            if (result.code != JsonParseReturnCode::kSuccess) {
+                return result;
+            }
+        }
+    }
+
+    return JsonUtils::g_RESULT_SUCCESS;
 }
 
 }

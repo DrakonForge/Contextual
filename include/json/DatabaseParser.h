@@ -16,7 +16,8 @@ struct DatabaseStats {
 
 enum class ParsingType : uint8_t {
     kDefault,
-    kSpeechbank
+    kSpeechbank,
+    kSimple
 };
 
 JsonParseResult loadGroup(RuleDatabase& out, const std::string& path);

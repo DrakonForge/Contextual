@@ -14,7 +14,7 @@ set(SOURCES
         src/RuleDatabase.cpp
         src/RuleTable.cpp
         src/json/DatabaseParser.cpp
-        src/json/TokenParser.cpp
+        src/json/SymbolParser.cpp
         src/json/RuleParser.cpp
         src/json/JsonUtils.cpp
         src/token/Token.cpp
@@ -37,7 +37,9 @@ set(SOURCES
         src/criterion/CriterionIncludes.cpp
         src/criterion/CriterionEmpty.cpp
         src/criterion/CriterionAlternate.cpp
-        src/criterion/CriterionDynamic.cpp)
+        src/criterion/CriterionDynamic.cpp
+        src/ResponseSimple.cpp
+        src/ResponseMultiple.cpp)
 set(INCLUDE_DIR
         ${CMAKE_SOURCE_DIR}/include
         ${CMAKE_SOURCE_DIR}/include/json

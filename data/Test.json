@@ -98,23 +98,10 @@
             {
               "Type": "Random",
               "Value": [
-                "Hello there, @subject!"
+                "Response A",
+                "Response B",
+                "Response C"
               ]
-            },
-            {
-              "Type": "Event",
-              "Value": "reply",
-              "Args": [
-                "any",
-                "Conversation1"
-              ]
-            },
-            {
-              "Type": "Context",
-              "Table": "Listener",
-              "Key": "Conversation",
-              "Operation": "Add",
-              "Value": 1
             }
           ]
         }

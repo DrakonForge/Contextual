@@ -14,6 +14,6 @@ struct RuleInfo {
     int priority;
 };
 
-JsonParseResult parseRule(StringTable& stringTable, std::unique_ptr<RuleEntry>& rule, std::unordered_map<std::string, RuleInfo>& namedRules, int& nextId, const rapidjson::Value& root, const std::string& idPrefix, ParsingType type, const std::unordered_map<std::string, std::shared_ptr<Token>>& symbols);
+JsonParseResult parseRule(StringTable& stringTable, std::unique_ptr<RuleEntry>& rule, std::unordered_map<std::string, RuleInfo>& namedRules, int& nextId, const rapidjson::Value& root, const std::string& idPrefix, ParsingType parsingType, const std::unordered_map<std::string, std::shared_ptr<Token>>& symbols);
 
 }

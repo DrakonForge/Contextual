@@ -3,8 +3,8 @@
 namespace Contextual {
 
 class Response {
-public:
-    virtual void execute() = 0;
+protected:
+    Response() = default;
 };
 
 }
