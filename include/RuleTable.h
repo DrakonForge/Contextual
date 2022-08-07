@@ -7,7 +7,7 @@
 
 #include "criterion/Criterion.h"
 #include "DatabaseQuery.h"
-#include "Response.h"
+#include "response/Response.h"
 
 namespace Contextual {
 

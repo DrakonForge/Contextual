@@ -38,8 +38,8 @@ set(SOURCES
         src/criterion/CriterionEmpty.cpp
         src/criterion/CriterionAlternate.cpp
         src/criterion/CriterionDynamic.cpp
-        src/ResponseSimple.cpp
-        src/ResponseMultiple.cpp)
+        src/response/ResponseSimple.cpp
+        src/response/ResponseMultiple.cpp)
 set(INCLUDE_DIR
         ${CMAKE_SOURCE_DIR}/include
         ${CMAKE_SOURCE_DIR}/include/json

@@ -9,8 +9,8 @@
 #include "CriterionFail.h"
 #include "CriterionIncludes.h"
 #include "CriterionStatic.h"
-#include "ResponseMultiple.h"
-#include "ResponseSimple.h"
+#include "response/ResponseMultiple.h"
+#include "response/ResponseSimple.h"
 #include "SymbolParser.h"
 
 namespace Contextual::RuleParser {

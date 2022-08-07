@@ -2,7 +2,7 @@
 
 #include "DatabaseParser.h"
 #include "JsonUtils.h"
-#include "Response.h"
+#include "response/Response.h"
 #include "RuleTable.h"
 #include "token/Token.h"
 
