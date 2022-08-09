@@ -10,7 +10,8 @@ namespace Contextual {
 
 class SymbolToken : public SpeechToken {
 public:
-    virtual std::optional<std::string> evaluate(const DatabaseQuery& query) const = 0;
+    [[nodiscard]] virtual std::optional<std::string> evaluate(const DatabaseQuery& query) const = 0;
+    [[nodiscard]] bool isSymbolToken() const override { return true; }
 protected:
     SymbolToken() = default;
 };

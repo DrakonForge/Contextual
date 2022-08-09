@@ -39,14 +39,15 @@ set(SOURCES
         src/criterion/CriterionDynamic.cpp
         src/response/ResponseSimple.cpp
         src/response/ResponseMultiple.cpp
-        src/speech/SpeechTokenizer.cpp
-        )
+        src/response/ResponseSpeech.cpp
+        src/speech/SpeechTokenizer.cpp include/speech/SpeechGenerator.h src/speech/SpeechGenerator.cpp)
 set(INCLUDE_DIR
         ${CMAKE_SOURCE_DIR}/include
         ${CMAKE_SOURCE_DIR}/include/json
         ${CMAKE_SOURCE_DIR}/include/criterion
         ${CMAKE_SOURCE_DIR}/include/token
         ${CMAKE_SOURCE_DIR}/include/speech
+        ${CMAKE_SOURCE_DIR}/include/response
         ${RAPIDJSON_INCLUDE_DIR})
 
 add_executable(${EXECUTABLE_NAME} ${SOURCES})

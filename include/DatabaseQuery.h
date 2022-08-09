@@ -5,9 +5,9 @@
 #include <unordered_map>
 
 #include "ContextTable.h"
+#include "Response.h"
 
 namespace Contextual {
-
 
 class DatabaseQuery {
 public:

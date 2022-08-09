@@ -1,4 +1,4 @@
-#include "response/ResponseMultiple.h"
+#include "ResponseMultiple.h"
 
 namespace Contextual {
 

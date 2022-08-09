@@ -8,9 +8,7 @@ const std::unique_ptr<RuleTable> g_NOT_FOUND = nullptr;
 
 }
 
-RuleDatabase::RuleDatabase(ContextManager& contextManager) : m_contextManager(contextManager) {
-
-}
+RuleDatabase::RuleDatabase(ContextManager& contextManager) : m_contextManager(contextManager) {}
 
 RuleDatabaseReturnCode RuleDatabase::addRuleTable(const std::string& group,
                                                   const std::string& category,

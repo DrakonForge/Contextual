@@ -13,6 +13,11 @@ enum class RuleDatabaseReturnCode : uint32_t {
     kAlreadyDefined = 10
 };
 
+struct QueryBestResult {
+    std::shared_ptr<Response> response;
+    int priority;
+};
+
 class RuleDatabase {
 public:
     explicit RuleDatabase(ContextManager& contextManager);
