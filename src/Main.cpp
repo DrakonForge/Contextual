@@ -5,6 +5,7 @@
 #include "ContextTable.h"
 #include "DatabaseParser.h"
 #include "RuleDatabase.h"
+#include "SpeechGenerator.h"
 #include "SpeechToken.h"
 #include "SpeechTokenizer.h"
 #include "StringTable.h"
@@ -104,8 +105,18 @@ void testTextParsingMany() {
     testTextParsing("{italics=true}Hello world!{italics=false}");
 }
 
+void testIntegerToWord() {
+    std::vector<int> toTest = { -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 100, 1000, 12055601, 124, 947268851 };
+    for(auto i : toTest) {
+        std::cout << "Target: " << i << "\n";
+        std::cout << "Word: " << Contextual::SpeechGenerator::integerToWord(i) << "\n";
+        std::cout << "Ordinal: " << Contextual::SpeechGenerator::integerToOrdinal(i) << "\n\n";
+    }
+}
+
 int main() {
-    testTextParsingMany();
+    //testTextParsingMany();
+    testIntegerToWord();
     //testDatabaseLoading();
     return 0;
 }
