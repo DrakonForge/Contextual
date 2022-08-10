@@ -24,4 +24,8 @@ std::string TokenList::toString() const {
     return str;
 }
 
+TokenType TokenList::getType() const {
+    return TokenType::kList;
+}
+
 }

@@ -28,8 +28,13 @@ std::optional<std::string> TokenContext::evaluate(const DatabaseQuery& query) co
     }
     return std::nullopt;
 }
+
 std::string TokenContext::toString() const {
     return "[Context=" + m_table + "." + m_key + "]";
+}
+
+TokenType TokenContext::getType() const {
+    return TokenType::kAny;
 }
 
 }

@@ -5,14 +5,13 @@
 namespace Contextual {
 
 TokenFunction::TokenFunction(std::string name,
-                             std::vector<std::shared_ptr<SymbolToken>> args) : m_name(std::move(name)), m_args(std::move(args)) {
-
-}
+                             std::vector<std::shared_ptr<SymbolToken>> args) : m_name(std::move(name)), m_args(std::move(args)) {}
 
 std::optional<std::string> TokenFunction::evaluate(const DatabaseQuery& query) const {
     // TODO: Evaluate function
     return std::nullopt;
 }
+
 std::string TokenFunction::toString() const {
     if(m_args.empty()) {
         return "[Function=" + m_name + "()]";
@@ -25,6 +24,10 @@ std::string TokenFunction::toString() const {
         return str;
     }
 
+}
+
+TokenType TokenFunction::getType() const {
+    return TokenType::kAny;
 }
 
 }
