@@ -23,7 +23,6 @@ set(SOURCES
         src/DatabaseQuery.cpp
         src/token/TokenFloat.cpp
         src/token/TokenFunction.cpp
-        src/token/TokenGroup.cpp
         src/token/TokenInt.cpp
         src/token/TokenList.cpp
         src/criterion/CriterionStatic.cpp
@@ -40,7 +39,8 @@ set(SOURCES
         src/response/ResponseSimple.cpp
         src/response/ResponseMultiple.cpp
         src/response/ResponseSpeech.cpp
-        src/speech/SpeechTokenizer.cpp include/speech/SpeechGenerator.h src/speech/SpeechGenerator.cpp)
+        src/speech/SpeechTokenizer.cpp
+        src/speech/SpeechGenerator.cpp)
 set(INCLUDE_DIR
         ${CMAKE_SOURCE_DIR}/include
         ${CMAKE_SOURCE_DIR}/include/json
