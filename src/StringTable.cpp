@@ -13,8 +13,8 @@ StringTable::StringTable() {
 int StringTable::cache(const std::string& str) {
     auto got = m_cache.find(str);
     if (got == m_cache.end()) {
-        m_cache.insert({ str, m_nextId});
-        m_lookup.insert({m_nextId, str});
+        m_cache.emplace( str, m_nextId);
+        m_lookup.emplace(m_nextId, str);
         return m_nextId++;
     }
     return got->second;

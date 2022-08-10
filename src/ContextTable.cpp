@@ -11,7 +11,7 @@ ContextTable::ContextTable(ContextManager& manager) : m_manager(manager) {}
 void ContextTable::set(const std::string& key, const std::string& strValue) {
     int symbol = m_manager.getStringTable().cache(strValue);
     FactTuple tuple = {FactType::kString, static_cast<float>(symbol)};
-    m_basicContext.insert({key, tuple});
+    m_basicContext.emplace(key, tuple);
 }
 
 void ContextTable::set(const std::string& key, const char* strValue) {
@@ -20,17 +20,17 @@ void ContextTable::set(const std::string& key, const char* strValue) {
 
 void ContextTable::set(const std::string& key, float floatValue) {
     FactTuple tuple = {FactType::kNumber, floatValue};
-    m_basicContext.insert({key, tuple});
+    m_basicContext.emplace(key, tuple);
 }
 
 void ContextTable::set(const std::string& key, int intValue) {
     FactTuple tuple = {FactType::kNumber, static_cast<float>(intValue)};
-    m_basicContext.insert({key, tuple});
+    m_basicContext.emplace(key, tuple);
 }
 
 void ContextTable::set(const std::string& key, bool boolValue) {
     FactTuple tuple = {FactType::kBoolean, static_cast<float>(boolValue)};
-    m_basicContext.insert({key, tuple});
+    m_basicContext.emplace(key, tuple);
 }
 
 void ContextTable::set(const std::string& key,
@@ -38,7 +38,7 @@ void ContextTable::set(const std::string& key,
     if (!m_listContext) {
         m_listContext = std::unordered_map<std::string, std::unique_ptr<std::unordered_set<int>>>();
     }
-    m_listContext->insert({key, std::move(listValue)});
+    m_listContext->emplace(key, std::move(listValue));
 }
 
 void ContextTable::set(const std::string& key,

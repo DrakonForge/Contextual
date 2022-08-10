@@ -18,7 +18,7 @@ RuleDatabaseReturnCode RuleDatabase::addRuleTable(const std::string& group,
         return RuleDatabaseReturnCode::kAlreadyDefined;
     }
 
-    m_groupCategoryToTable.insert({groupCategory, std::move(ruleTable) });
+    m_groupCategoryToTable.emplace(groupCategory, std::move(ruleTable));
     return RuleDatabaseReturnCode::kSuccess;
 }
 

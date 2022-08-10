@@ -222,7 +222,7 @@ JsonParseResult parseSymbol(std::unordered_map<std::string, std::shared_ptr<Symb
     if (result.code != JsonParseReturnCode::kSuccess) {
         return result;
     }
-    symbols.insert({name, token});
+    symbols.emplace(name, token);
     return JsonUtils::g_RESULT_SUCCESS;
 }
 
