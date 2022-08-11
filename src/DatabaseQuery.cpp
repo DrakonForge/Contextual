@@ -2,7 +2,7 @@
 
 namespace Contextual {
 
-DatabaseQuery::DatabaseQuery() {
+DatabaseQuery::DatabaseQuery(ContextManager& contextManager) : m_manager(contextManager) {
     m_willFail = WillFail::kNormal;
 }
 
@@ -20,6 +20,9 @@ void DatabaseQuery::setWillFail(DatabaseQuery::WillFail value) {
 
 DatabaseQuery::WillFail DatabaseQuery::willFail() const {
     return m_willFail;
+}
+StringTable& DatabaseQuery::getStringTable() {
+    return m_manager.getStringTable();
 }
 
 }  // namespace Contextual
