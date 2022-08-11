@@ -4,6 +4,7 @@
 
 #include "ContextTable.h"
 #include "DatabaseParser.h"
+#include "DefaultFunctionTable.h"
 #include "RuleDatabase.h"
 #include "SpeechGenerator.h"
 #include "SpeechToken.h"
@@ -19,8 +20,15 @@ void print(std::unordered_set<std::string> const& s) {
     std::copy(s.begin(), s.end(), std::ostream_iterator<std::string>(std::cout, " "));
 }
 
+Contextual::ContextManager createDefaultContextManager() {
+    Contextual::DefaultFunctionTable functionTable;
+    functionTable.initialize();
+    Contextual::ContextManager contextManager(functionTable);
+    return contextManager;
+}
+
 void testContext() {
-    Contextual::ContextManager contextManager;
+    Contextual::ContextManager contextManager = createDefaultContextManager();
     Contextual::StringTable& stringTable = contextManager.getStringTable();
     int a = stringTable.cache("Hello world");
     int b = stringTable.cache("Hello world");
@@ -46,7 +54,7 @@ void testContext() {
 }
 
 void testDatabaseLoading() {
-    Contextual::ContextManager contextManager;
+    Contextual::ContextManager contextManager = createDefaultContextManager();
     std::filesystem::path path = std::filesystem::path("..") / std::filesystem::path("data");
     Contextual::RuleDatabase database(contextManager);
     Contextual::RuleParser::DatabaseStats stats = Contextual::RuleParser::loadDatabase(database, path.string());
