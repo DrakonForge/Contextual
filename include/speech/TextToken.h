@@ -8,9 +8,10 @@ namespace Contextual {
 
 struct TextToken : public SpeechToken {
     bool isLiteral;
+
 protected:
-    TextToken() : isLiteral(false) {};
-    explicit TextToken(bool isLiteral) : isLiteral(isLiteral) {};
+    TextToken() : isLiteral(false){};
+    explicit TextToken(bool isLiteral) : isLiteral(isLiteral){};
 };
 
 // Explicit constructors so that they can be used when making shared pointers
@@ -35,7 +36,7 @@ struct TextFormatBool : TextFormat {
     bool value = false;
     explicit TextFormatBool(std::string attribute, bool value) : TextFormat(std::move(attribute)), value(value) {}
     [[nodiscard]] std::string toString() const override {
-        if(value) {
+        if (value) {
             return "{" + attribute + "=true}";
         }
         return "{" + attribute + "=false}";
@@ -60,10 +61,11 @@ struct TextFormatInt : TextFormat {
 
 struct TextFormatString : TextFormat {
     std::string value;
-    explicit TextFormatString(std::string attribute, std::string value) : TextFormat(std::move(attribute)), value(std::move(value)) {}
+    explicit TextFormatString(std::string attribute, std::string value)
+        : TextFormat(std::move(attribute)), value(std::move(value)) {}
     [[nodiscard]] std::string toString() const override {
         return "{" + attribute + "=\"" + value + "\"}";
     }
 };
 
-}
+}  // namespace Contextual

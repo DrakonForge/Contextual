@@ -11,7 +11,7 @@ const std::string g_EMPTY_STRING = "";
 ResponseSimple::ResponseSimple(std::vector<std::string> options) : m_options(std::move(options)) {}
 
 const std::string& ResponseSimple::getRandomOption() const {
-    if(m_options.empty()) {
+    if (m_options.empty()) {
         return g_EMPTY_STRING;
     }
     static std::default_random_engine e;
@@ -24,4 +24,4 @@ const std::vector<std::string>& ResponseSimple::getOptions() const {
     return m_options;
 }
 
-}
+}  // namespace Contextual

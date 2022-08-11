@@ -2,14 +2,6 @@
 
 namespace Contextual {
 
-enum class TokenType {
-    kContext,
-    kFunction,
-    kFloat,
-    kInt,
-    kList,
-    kString,
-    kBool
-};
+enum class TokenType { kContext, kFunction, kFloat, kInt, kList, kString, kBool };
 
 }

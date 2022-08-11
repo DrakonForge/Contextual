@@ -28,10 +28,10 @@ struct JsonParseResult {
 
 namespace JsonUtils {
 
-const JsonParseResult g_RESULT_SUCCESS = {JsonParseReturnCode::kSuccess, "" };
+const JsonParseResult g_RESULT_SUCCESS = {JsonParseReturnCode::kSuccess, ""};
 bool readFile(const std::string& path, rapidjson::Document& out);
 JsonParseResult getString(std::string& str, const rapidjson::Value& obj, const std::string& key);
 
-}
+}  // namespace JsonUtils
 
-}
+}  // namespace Contextual

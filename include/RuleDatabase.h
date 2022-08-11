@@ -8,10 +8,7 @@
 
 namespace Contextual {
 
-enum class RuleDatabaseReturnCode : uint32_t {
-    kSuccess = 0,
-    kAlreadyDefined = 10
-};
+enum class RuleDatabaseReturnCode : uint32_t { kSuccess = 0, kAlreadyDefined = 10 };
 
 struct QueryBestResult {
     std::shared_ptr<Response> response;
@@ -22,9 +19,11 @@ class RuleDatabase {
 public:
     explicit RuleDatabase(ContextManager& contextManager);
     virtual ~RuleDatabase() = default;
-    RuleDatabaseReturnCode addRuleTable(const std::string& group, const std::string& category, std::unique_ptr<RuleTable>& ruleTable);
+    RuleDatabaseReturnCode addRuleTable(const std::string& group, const std::string& category,
+                                        std::unique_ptr<RuleTable>& ruleTable);
     const std::unique_ptr<RuleTable>& getRuleTable(const std::string& group, const std::string& category) const;
     ContextManager& getContextManager();
+
 private:
     struct GroupCategory {
         std::string group;
@@ -41,7 +40,8 @@ private:
         }
     };
     ContextManager& m_contextManager;
-    std::unordered_map<GroupCategory, std::unique_ptr<RuleTable>, GroupCategoryHash, GroupCategoryEquals> m_groupCategoryToTable;
+    std::unordered_map<GroupCategory, std::unique_ptr<RuleTable>, GroupCategoryHash, GroupCategoryEquals>
+        m_groupCategoryToTable;
 };
 
-}
+}  // namespace Contextual

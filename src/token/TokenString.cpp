@@ -21,4 +21,4 @@ const std::string& TokenString::getValue() const {
     return m_value;
 }
 
-}
+}  // namespace Contextual

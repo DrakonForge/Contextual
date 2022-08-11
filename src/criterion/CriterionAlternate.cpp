@@ -4,15 +4,14 @@
 
 namespace Contextual {
 
-CriterionAlternate::CriterionAlternate(std::unordered_set<int> options, bool invert) : CriterionFloatComparable(invert), m_options(std::move(options)) {}
+CriterionAlternate::CriterionAlternate(std::unordered_set<int> options, bool invert)
+    : CriterionFloatComparable(invert), m_options(std::move(options)) {}
 
-bool CriterionAlternate::evaluate(const std::string& table,
-                               const std::string& key,
-                               const DatabaseQuery& query) const {
+bool CriterionAlternate::evaluate(const std::string& table, const std::string& key, const DatabaseQuery& query) const {
     std::shared_ptr<ContextTable> contextTable = query.getContextTable(table);
-    if(contextTable != nullptr) {
+    if (contextTable != nullptr) {
         std::optional<float> value = contextTable->getRawValue(key);
-        if(value) {
+        if (value) {
             return compare(*value);
         }
     }
@@ -27,4 +26,4 @@ int CriterionAlternate::getPriority() const {
     return 2;
 }
 
-}
+}  // namespace Contextual

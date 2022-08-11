@@ -12,9 +12,10 @@ public:
     [[nodiscard]] std::string toString() const override;
     [[nodiscard]] const std::string& getTable() const;
     [[nodiscard]] const std::string& getKey() const;
+
 private:
     const std::string m_table;
     const std::string m_key;
 };
 
-}
+}  // namespace Contextual

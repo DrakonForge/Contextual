@@ -16,4 +16,4 @@ Criterion::~Criterion() {
     --count;
 }
 
-}
+}  // namespace Contextual

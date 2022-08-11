@@ -22,4 +22,4 @@ float TokenFloat::getValue() const {
     return m_value;
 }
 
-}
+}  // namespace Contextual

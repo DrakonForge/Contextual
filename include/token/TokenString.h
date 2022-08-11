@@ -11,8 +11,9 @@ public:
     [[nodiscard]] TokenType getType() const override;
     [[nodiscard]] std::string toString() const override;
     [[nodiscard]] const std::string& getValue() const;
+
 private:
     const std::string m_value;
 };
 
-}
+}  // namespace Contextual

@@ -4,13 +4,11 @@ namespace Contextual {
 
 CriterionEmpty::CriterionEmpty(bool invert) : CriterionListComparable(invert) {}
 
-bool CriterionEmpty::evaluate(const std::string& table,
-                                 const std::string& key,
-                                 const DatabaseQuery& query) const {
+bool CriterionEmpty::evaluate(const std::string& table, const std::string& key, const DatabaseQuery& query) const {
     std::shared_ptr<ContextTable> contextTable = query.getContextTable(table);
-    if(contextTable != nullptr) {
+    if (contextTable != nullptr) {
         const std::unique_ptr<std::unordered_set<int>>& value = contextTable->getList(key);
-        if(value != nullptr) {
+        if (value != nullptr) {
             return compare(*value);
         }
     }
@@ -25,4 +23,4 @@ int CriterionEmpty::getPriority() const {
     return 4;
 }
 
-}
+}  // namespace Contextual

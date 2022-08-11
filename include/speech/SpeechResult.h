@@ -13,4 +13,4 @@ struct SpeechResult {
     int priority;
 };
 
-}
+}  // namespace Contextual

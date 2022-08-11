@@ -7,4 +7,4 @@ protected:
     Response() = default;
 };
 
-}
+}  // namespace Contextual

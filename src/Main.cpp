@@ -11,18 +11,12 @@
 #include "StringTable.h"
 #include "SymbolToken.h"
 
-void print(std::unordered_set<int> const &s)
-{
-    std::copy(s.begin(),
-              s.end(),
-              std::ostream_iterator<int>(std::cout, " "));
+void print(std::unordered_set<int> const& s) {
+    std::copy(s.begin(), s.end(), std::ostream_iterator<int>(std::cout, " "));
 }
 
-void print(std::unordered_set<std::string> const &s)
-{
-    std::copy(s.begin(),
-              s.end(),
-              std::ostream_iterator<std::string>(std::cout, " "));
+void print(std::unordered_set<std::string> const& s) {
+    std::copy(s.begin(), s.end(), std::ostream_iterator<std::string>(std::cout, " "));
 }
 
 void testContext() {
@@ -38,7 +32,7 @@ void testContext() {
     contextTable->set("NumApples", 3);
     contextTable->set("Name", "Steve");
     contextTable->set("IsAlive", true);
-    contextTable->set("Equipment", std::unordered_set<const char*>{ "iron", "sword", "melee" });
+    contextTable->set("Equipment", std::unordered_set<const char*>{"iron", "sword", "melee"});
 
     std::cout << "Health as Float: " << contextTable->getFloat("Health").value_or(-999) << "\n";
     std::cout << "Health as Int: " << contextTable->getInt("Health").value_or(-999) << "\n";
@@ -68,21 +62,22 @@ void testDatabaseLoading() {
     std::cout << "Nullptr: " << (table == nullptr) << "\n";
 }
 
-
 void testTextParsing(const std::string& str) {
     std::vector<std::shared_ptr<Contextual::SpeechToken>> tokens;
     const std::unordered_map<std::string, std::shared_ptr<Contextual::SymbolToken>> symbols;
     const std::unordered_map<std::string, std::shared_ptr<Contextual::SymbolToken>> localSymbols;
 
-    std::cout << "Target string: \"" << str << "\"" << "\n";
+    std::cout << "Target string: \"" << str << "\""
+              << "\n";
     auto result = Contextual::SpeechTokenizer::tokenize(tokens, str, symbols, localSymbols);
-    if(result.code == Contextual::SpeechTokenizerReturnCode::kSuccess) {
-        std::cout << "Success!" << "\n";
+    if (result.code == Contextual::SpeechTokenizerReturnCode::kSuccess) {
+        std::cout << "Success!"
+                  << "\n";
     } else {
         std::cout << "Error: " << result.errorMsg << "\n";
     }
     std::cout << "Tokenization: ";
-    for(const auto& token : tokens) {
+    for (const auto& token : tokens) {
         std::cout << token->toString();
     }
     std::cout << "\n\n";
@@ -106,8 +101,8 @@ void testTextParsingMany() {
 }
 
 void testIntegerToWord() {
-    std::vector<int> toTest = { -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 100, 1000, 12055601, 124, 947268851 };
-    for(auto i : toTest) {
+    std::vector<int> toTest = {-1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 100, 1000, 12055601, 124, 947268851};
+    for (auto i : toTest) {
         std::cout << "Target: " << i << "\n";
         std::cout << "Word: " << Contextual::SpeechGenerator::integerToWord(i) << "\n";
         std::cout << "Ordinal: " << Contextual::SpeechGenerator::integerToOrdinal(i) << "\n\n";
@@ -115,8 +110,8 @@ void testIntegerToWord() {
 }
 
 int main() {
-    //testTextParsingMany();
+    // testTextParsingMany();
     testIntegerToWord();
-    //testDatabaseLoading();
+    // testDatabaseLoading();
     return 0;
 }

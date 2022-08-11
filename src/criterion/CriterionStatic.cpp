@@ -7,15 +7,14 @@
 
 namespace Contextual {
 
-CriterionStatic::CriterionStatic(const float min, const float max, const bool invert) : CriterionFloatComparable(invert), m_min(min), m_max(max) {}
+CriterionStatic::CriterionStatic(const float min, const float max, const bool invert)
+    : CriterionFloatComparable(invert), m_min(min), m_max(max) {}
 
-bool CriterionStatic::evaluate(const std::string& table,
-                               const std::string& key,
-                               const DatabaseQuery& query) const {
+bool CriterionStatic::evaluate(const std::string& table, const std::string& key, const DatabaseQuery& query) const {
     std::shared_ptr<ContextTable> contextTable = query.getContextTable(table);
-    if(contextTable != nullptr) {
+    if (contextTable != nullptr) {
         std::optional<float> value = contextTable->getRawValue(key);
-        if(value) {
+        if (value) {
             return compare(*value);
         }
     }
@@ -30,4 +29,4 @@ int CriterionStatic::getPriority() const {
     return 3;
 }
 
-}
+}  // namespace Contextual

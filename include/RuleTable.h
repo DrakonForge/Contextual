@@ -15,7 +15,8 @@ struct Criteria {
     std::string table;
     std::string key;
     std::shared_ptr<Criterion> criterion;
-    Criteria(std::string table, std::string key, std::shared_ptr<Criterion> criterion) : table(std::move(table)), key(std::move(key)), criterion(std::move(criterion)) {}
+    Criteria(std::string table, std::string key, std::shared_ptr<Criterion> criterion)
+        : table(std::move(table)), key(std::move(key)), criterion(std::move(criterion)) {}
 };
 
 struct RuleEntry {
@@ -34,9 +35,10 @@ public:
     bool sortEntries();
     const std::unique_ptr<RuleEntry>& query(DatabaseQuery query);
     size_t getNumEntries();
+
 private:
     std::vector<std::unique_ptr<RuleEntry>> m_entries;
     bool m_sorted = false;
 };
 
-}
+}  // namespace Contextual

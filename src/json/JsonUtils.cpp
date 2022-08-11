@@ -18,7 +18,7 @@ JsonParseResult getString(std::string& str, const rapidjson::Value& obj, const s
         str = value.GetString();
         return JsonUtils::g_RESULT_SUCCESS;
     }
-    return {JsonParseReturnCode::kInvalidType, "Key \"" + key + "\" must be a string" };
+    return {JsonParseReturnCode::kInvalidType, "Key \"" + key + "\" must be a string"};
 }
 
-}
+}  // namespace Contextual::JsonUtils

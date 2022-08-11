@@ -10,7 +10,7 @@ std::optional<std::string> TokenBoolean::evaluate(const DatabaseQuery& query) co
 }
 
 std::string TokenBoolean::toString() const {
-    if(m_value) {
+    if (m_value) {
         return "[Boolean=true]";
     } else {
         return "[Boolean=false]";
@@ -24,4 +24,4 @@ bool TokenBoolean::getValue() const {
     return m_value;
 }
 
-}
+}  // namespace Contextual

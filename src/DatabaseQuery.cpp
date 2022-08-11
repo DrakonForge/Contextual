@@ -6,10 +6,9 @@ DatabaseQuery::DatabaseQuery() {
     m_willFail = WillFail::kNormal;
 }
 
-std::shared_ptr<ContextTable> DatabaseQuery::getContextTable(
-    const std::string& tableName) const {
+std::shared_ptr<ContextTable> DatabaseQuery::getContextTable(const std::string& tableName) const {
     auto got = m_contexts.find(tableName);
-    if(got == m_contexts.end()) {
+    if (got == m_contexts.end()) {
         return nullptr;
     }
     return got->second;
@@ -23,4 +22,4 @@ DatabaseQuery::WillFail DatabaseQuery::willFail() const {
     return m_willFail;
 }
 
-}
+}  // namespace Contextual

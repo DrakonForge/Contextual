@@ -13,7 +13,7 @@ StringTable::StringTable() {
 int StringTable::cache(const std::string& str) {
     auto got = m_cache.find(str);
     if (got == m_cache.end()) {
-        m_cache.emplace( str, m_nextId);
+        m_cache.emplace(str, m_nextId);
         m_lookup.emplace(m_nextId, str);
         return m_nextId++;
     }
@@ -32,4 +32,4 @@ size_t StringTable::getSize() const {
     return m_cache.size();
 }
 
-}
+}  // namespace Contextual

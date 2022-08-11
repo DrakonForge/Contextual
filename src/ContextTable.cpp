@@ -33,16 +33,14 @@ void ContextTable::set(const std::string& key, bool boolValue) {
     m_basicContext.emplace(key, tuple);
 }
 
-void ContextTable::set(const std::string& key,
-                       std::unique_ptr<std::unordered_set<int>>& listValue) {
+void ContextTable::set(const std::string& key, std::unique_ptr<std::unordered_set<int>>& listValue) {
     if (!m_listContext) {
         m_listContext = std::unordered_map<std::string, std::unique_ptr<std::unordered_set<int>>>();
     }
     m_listContext->emplace(key, std::move(listValue));
 }
 
-void ContextTable::set(const std::string& key,
-                       const std::unordered_set<const char*>& listValue) {
+void ContextTable::set(const std::string& key, const std::unordered_set<const char*>& listValue) {
     auto intValues = std::make_unique<std::unordered_set<int>>();
     StringTable& symbolTable = m_manager.getStringTable();
     for (const char* cStr : listValue) {
@@ -51,8 +49,7 @@ void ContextTable::set(const std::string& key,
     set(key, intValues);
 }
 
-void ContextTable::set(const std::string& key,
-                       const std::unordered_set<std::string>& listValue) {
+void ContextTable::set(const std::string& key, const std::unordered_set<std::string>& listValue) {
     auto intValues = std::make_unique<std::unordered_set<int>>();
     StringTable& symbolTable = m_manager.getStringTable();
     for (const std::string& str : listValue) {
@@ -61,8 +58,7 @@ void ContextTable::set(const std::string& key,
     set(key, intValues);
 }
 
-std::optional<std::string> ContextTable::getString(
-    const std::string& key) const {
+std::optional<std::string> ContextTable::getString(const std::string& key) const {
     std::optional<FactTuple> tuple = getTuple(key, FactType::kString);
     if (!tuple) {
         return std::nullopt;
@@ -95,16 +91,14 @@ std::optional<bool> ContextTable::getBool(const std::string& key) const {
     return tuple->value != 0.0f;
 }
 
-const std::unique_ptr<std::unordered_set<int>>& ContextTable::getList(
-    const std::string& key) const {
+const std::unique_ptr<std::unordered_set<int>>& ContextTable::getList(const std::string& key) const {
     if (!m_listContext || m_listContext->find(key) == m_listContext->end()) {
         return g_NOT_FOUND;
     }
     return m_listContext->at(key);
 }
 
-std::optional<std::unordered_set<std::string>> ContextTable::toStringList(
-    const std::string& key) const {
+std::optional<std::unordered_set<std::string>> ContextTable::toStringList(const std::string& key) const {
     const auto& intList = getList(key);
     if (intList == nullptr) {
         return std::nullopt;
@@ -131,7 +125,7 @@ FactType ContextTable::getType(const std::string& key) const {
 
 std::optional<float> ContextTable::getRawValue(const std::string& key) const {
     auto got = m_basicContext.find(key);
-    if(got == m_basicContext.end()) {
+    if (got == m_basicContext.end()) {
         return std::nullopt;
     }
     const FactTuple& tuple = got->second;
@@ -143,8 +137,7 @@ bool ContextTable::hasKey(const std::string& key) const {
            (m_listContext && m_listContext->find(key) != m_listContext->end());
 }
 
-std::optional<ContextTable::FactTuple> ContextTable::getTuple(
-    const std::string& key, const FactType type) const {
+std::optional<ContextTable::FactTuple> ContextTable::getTuple(const std::string& key, const FactType type) const {
     auto got = m_basicContext.find(key);
     if (got == m_basicContext.end()) {
         return std::nullopt;
@@ -156,4 +149,4 @@ std::optional<ContextTable::FactTuple> ContextTable::getTuple(
     return tuple;
 }
 
-}
+}  // namespace Contextual

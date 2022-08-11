@@ -10,4 +10,4 @@ protected:
     bool m_invert;
 };
 
-}
+}  // namespace Contextual

@@ -12,7 +12,7 @@ bool compareEntries(const std::unique_ptr<RuleEntry>& entry1, const std::unique_
     return entry1->priority > entry2->priority;
 }
 
-}
+}  // namespace
 
 void RuleTable::addEntry(std::unique_ptr<RuleEntry>& ruleEntry) {
     m_entries.push_back(std::move(ruleEntry));
@@ -20,7 +20,7 @@ void RuleTable::addEntry(std::unique_ptr<RuleEntry>& ruleEntry) {
 }
 
 bool RuleTable::sortEntries() {
-    if(m_sorted) {
+    if (m_sorted) {
         return false;
     }
     std::sort(m_entries.begin(), m_entries.end(), compareEntries);
@@ -38,4 +38,4 @@ const std::unique_ptr<RuleEntry>& RuleTable::query(DatabaseQuery query) {
     return m_entries[0];
 }
 
-}
+}  // namespace Contextual

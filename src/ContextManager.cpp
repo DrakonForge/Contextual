@@ -7,6 +7,8 @@ std::shared_ptr<ContextTable> ContextManager::createContextTable() {
     return contextTable;
 }
 
-StringTable& ContextManager::getStringTable() { return m_stringTable; }
-
+StringTable& ContextManager::getStringTable() {
+    return m_stringTable;
 }
+
+}  // namespace Contextual

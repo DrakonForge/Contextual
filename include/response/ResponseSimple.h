@@ -12,9 +12,9 @@ public:
     explicit ResponseSimple(std::vector<std::string> options);
     [[nodiscard]] const std::string& getRandomOption() const;
     [[nodiscard]] const std::vector<std::string>& getOptions() const;
+
 private:
     const std::vector<std::string> m_options;
-
 };
 
-}
+}  // namespace Contextual

@@ -17,7 +17,7 @@ std::optional<std::string> TokenList::evaluate(const DatabaseQuery& query) const
 
 std::string TokenList::toString() const {
     std::string str = "[List=[" + m_tokens[0]->toString();
-    for(int i = 1; i < m_tokens.size(); ++i) {
+    for (int i = 1; i < m_tokens.size(); ++i) {
         str += ", " + m_tokens[i]->toString();
     }
     str += "]]";
@@ -31,4 +31,4 @@ const std::vector<std::shared_ptr<SymbolToken>>& TokenList::getValue() const {
     return m_tokens;
 }
 
-}
+}  // namespace Contextual

@@ -8,10 +8,11 @@ namespace {
 const std::vector<std::shared_ptr<SpeechToken>> g_EMPTY_LINE;
 }
 
-ResponseSpeech::ResponseSpeech(std::vector<std::vector<std::shared_ptr<SpeechToken>>> speechLines) : m_speechLines(std::move(speechLines)) {}
+ResponseSpeech::ResponseSpeech(std::vector<std::vector<std::shared_ptr<SpeechToken>>> speechLines)
+    : m_speechLines(std::move(speechLines)) {}
 
 const std::vector<std::shared_ptr<SpeechToken>>& ResponseSpeech::getRandomLine() const {
-    if(m_speechLines.empty()) {
+    if (m_speechLines.empty()) {
         return g_EMPTY_LINE;
     }
 
@@ -22,4 +23,4 @@ const std::vector<std::shared_ptr<SpeechToken>>& ResponseSpeech::getRandomLine()
     return m_speechLines[index];
 }
 
-}
+}  // namespace Contextual

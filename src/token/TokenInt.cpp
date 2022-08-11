@@ -21,4 +21,4 @@ int TokenInt::getValue() const {
     return m_value;
 }
 
-}
+}  // namespace Contextual

@@ -14,8 +14,9 @@ public:
     virtual ~ContextManager() = default;
     std::shared_ptr<ContextTable> createContextTable();
     StringTable& getStringTable();
+
 private:
     StringTable m_stringTable;
 };
 
-}
+}  // namespace Contextual

@@ -4,4 +4,4 @@ namespace Contextual {
 
 CriterionListComparable::CriterionListComparable(const bool invert) : CriterionInvertible(invert) {}
 
-}
+}  // namespace Contextual

@@ -9,13 +9,7 @@
 
 namespace Contextual {
 
-enum class FactType : uint8_t {
-    kNull,
-    kString,
-    kNumber,
-    kBoolean,
-    kList
-};
+enum class FactType : uint8_t { kNull, kString, kNumber, kBoolean, kList };
 
 class ContextManager;
 class ContextTable {
@@ -49,9 +43,8 @@ private:
 
     ContextManager& m_manager;
     std::unordered_map<std::string, FactTuple> m_basicContext;
-    std::optional<std::unordered_map<std::string, std::unique_ptr<std::unordered_set<int>>>>
-        m_listContext;
+    std::optional<std::unordered_map<std::string, std::unique_ptr<std::unordered_set<int>>>> m_listContext;
     std::optional<FactTuple> getTuple(const std::string& key, FactType type) const;
 };
 
-}
+}  // namespace Contextual

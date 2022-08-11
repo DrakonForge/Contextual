@@ -40,7 +40,7 @@ set(SOURCES
         src/response/ResponseMultiple.cpp
         src/response/ResponseSpeech.cpp
         src/speech/SpeechTokenizer.cpp
-        src/speech/SpeechGenerator.cpp)
+        src/speech/SpeechGenerator.cpp src/function/FunctionTable.cpp src/function/DefaultFunctionTable.cpp)
 set(INCLUDE_DIR
         ${CMAKE_SOURCE_DIR}/include
         ${CMAKE_SOURCE_DIR}/include/json
@@ -48,6 +48,7 @@ set(INCLUDE_DIR
         ${CMAKE_SOURCE_DIR}/include/token
         ${CMAKE_SOURCE_DIR}/include/speech
         ${CMAKE_SOURCE_DIR}/include/response
+        ${CMAKE_SOURCE_DIR}/include/function
         ${RAPIDJSON_INCLUDE_DIR})
 
 add_executable(${EXECUTABLE_NAME} ${SOURCES})
