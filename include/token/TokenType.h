@@ -3,8 +3,8 @@
 namespace Contextual {
 
 enum class TokenType {
-    kAny,
-    kError,
+    kContext,
+    kFunction,
     kFloat,
     kInt,
     kList,

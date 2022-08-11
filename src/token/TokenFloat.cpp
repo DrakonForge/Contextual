@@ -18,5 +18,8 @@ std::string TokenFloat::toString() const {
 TokenType TokenFloat::getType() const {
     return TokenType::kFloat;
 }
+float TokenFloat::getValue() const {
+    return m_value;
+}
 
 }

@@ -17,5 +17,8 @@ std::string TokenInt::toString() const {
 TokenType TokenInt::getType() const {
     return TokenType::kInt;
 }
+int TokenInt::getValue() const {
+    return m_value;
+}
 
 }

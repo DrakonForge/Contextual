@@ -20,5 +20,8 @@ std::string TokenBoolean::toString() const {
 TokenType TokenBoolean::getType() const {
     return TokenType::kBool;
 }
+bool TokenBoolean::getValue() const {
+    return m_value;
+}
 
 }

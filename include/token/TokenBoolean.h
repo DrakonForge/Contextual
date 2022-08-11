@@ -10,6 +10,7 @@ public:
     [[nodiscard]] std::optional<std::string> evaluate(const DatabaseQuery& query) const override;
     [[nodiscard]] TokenType getType() const override;
     [[nodiscard]] std::string toString() const override;
+    [[nodiscard]] bool getValue() const;
 private:
     const bool m_value;
 };

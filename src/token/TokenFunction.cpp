@@ -27,7 +27,14 @@ std::string TokenFunction::toString() const {
 }
 
 TokenType TokenFunction::getType() const {
-    return TokenType::kAny;
+    return TokenType::kFunction;
+}
+const std::string& TokenFunction::getName() const {
+    return m_name;
+}
+const std::vector<std::shared_ptr<SymbolToken>>& TokenFunction::getArgs()
+    const {
+    return m_args;
 }
 
 }

@@ -13,6 +13,7 @@ public:
     [[nodiscard]] std::optional<std::string> evaluate(const DatabaseQuery& query) const override;
     [[nodiscard]] TokenType getType() const override;
     [[nodiscard]] std::string toString() const override;
+    [[nodiscard]] const std::vector<std::shared_ptr<SymbolToken>>& getValue() const;
 private:
     const std::vector<std::shared_ptr<SymbolToken>> m_tokens;
 };

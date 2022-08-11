@@ -17,5 +17,8 @@ std::string TokenString::toString() const {
 TokenType TokenString::getType() const {
     return TokenType::kString;
 }
+const std::string& TokenString::getValue() const {
+    return m_value;
+}
 
 }

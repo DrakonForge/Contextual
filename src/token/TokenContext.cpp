@@ -34,7 +34,13 @@ std::string TokenContext::toString() const {
 }
 
 TokenType TokenContext::getType() const {
-    return TokenType::kAny;
+    return TokenType::kContext;
+}
+const std::string& TokenContext::getTable() const {
+    return m_table;
+}
+const std::string& TokenContext::getKey() const {
+    return m_key;
 }
 
 }
