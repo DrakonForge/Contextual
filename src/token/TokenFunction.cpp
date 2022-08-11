@@ -2,13 +2,33 @@
 
 #include <utility>
 
+#include "SpeechGenerator.h"
+
 namespace Contextual {
 
 TokenFunction::TokenFunction(std::string name, std::vector<std::shared_ptr<SymbolToken>> args)
     : m_name(std::move(name)), m_args(std::move(args)) {}
 
-std::optional<std::string> TokenFunction::evaluate(const DatabaseQuery& query) const {
+std::optional<std::string> TokenFunction::evaluate(DatabaseQuery& query) const {
     // TODO: Evaluate function
+    FunctionVal val = query.getFunctionTable().call(m_name, m_args, query);
+    if(val.error) {
+        return std::nullopt;
+    }
+    if(val.type == TokenType::kList) {
+        // TODO
+    }
+    if(val.type == TokenType::kString) {
+        return val.stringVal;
+    }
+    if(val.type == TokenType::kInt) {
+        return SpeechGenerator::integerToWord(val.intVal);
+    }
+    if(val.type == TokenType::kFloat) {
+        int intVal = static_cast<int>(val.floatVal);
+        return SpeechGenerator::integerToWord(intVal);
+    }
+
     return std::nullopt;
 }
 

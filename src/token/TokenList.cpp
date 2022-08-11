@@ -6,7 +6,7 @@ namespace Contextual {
 
 TokenList::TokenList(std::vector<std::shared_ptr<SymbolToken>> tokens) : m_tokens(std::move(tokens)) {}
 
-std::optional<std::string> TokenList::evaluate(const DatabaseQuery& query) const {
+std::optional<std::string> TokenList::evaluate(DatabaseQuery& query) const {
     // TODO Improve RNG generation
     static std::default_random_engine e;
     std::uniform_int_distribution<size_t> dis(0, m_tokens.size());

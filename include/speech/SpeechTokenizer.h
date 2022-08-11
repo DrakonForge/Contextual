@@ -9,7 +9,13 @@
 
 namespace Contextual {
 
-enum class SpeechTokenizerReturnCode : uint32_t { kSuccess, kInvalidSyntax, kInvalidFormat, kInvalidSymbol };
+enum class SpeechTokenizerReturnCode : uint32_t {
+    kSuccess,
+    kInvalidSyntax,
+    kInvalidFormat,
+    kInvalidSymbol,
+    kInvalidFunction
+};
 
 struct SpeechTokenizerResult {
     SpeechTokenizerReturnCode code;

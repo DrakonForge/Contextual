@@ -24,5 +24,8 @@ DatabaseQuery::WillFail DatabaseQuery::willFail() const {
 StringTable& DatabaseQuery::getStringTable() {
     return m_manager.getStringTable();
 }
+const FunctionTable& DatabaseQuery::getFunctionTable() const {
+    return m_manager.getFunctionTable();
+}
 
 }  // namespace Contextual

@@ -7,7 +7,7 @@ namespace Contextual {
 class TokenContext : public SymbolToken {
 public:
     TokenContext(std::string table, std::string key);
-    [[nodiscard]] std::optional<std::string> evaluate(const DatabaseQuery& query) const override;
+    [[nodiscard]] std::optional<std::string> evaluate(DatabaseQuery& query) const override;
     [[nodiscard]] TokenType getType() const override;
     [[nodiscard]] std::string toString() const override;
     [[nodiscard]] const std::string& getTable() const;

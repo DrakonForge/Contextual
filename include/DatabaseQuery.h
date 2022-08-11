@@ -23,6 +23,7 @@ public:
     void setWillFail(WillFail value);
     WillFail willFail() const;
     StringTable& getStringTable();
+    const FunctionTable& getFunctionTable() const;
 
 private:
     ContextManager& m_manager;

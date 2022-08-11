@@ -6,7 +6,7 @@ namespace Contextual {
 
 TokenFloat::TokenFloat(float value) : m_value(value) {}
 
-std::optional<std::string> TokenFloat::evaluate(const DatabaseQuery& query) const {
+std::optional<std::string> TokenFloat::evaluate(DatabaseQuery& query) const {
     int intValue = static_cast<int>(m_value);
     return SpeechGenerator::integerToWord(intValue);
 }

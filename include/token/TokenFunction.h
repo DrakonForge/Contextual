@@ -10,7 +10,7 @@ namespace Contextual {
 class TokenFunction : public SymbolToken {
 public:
     TokenFunction(std::string name, std::vector<std::shared_ptr<SymbolToken>> args);
-    [[nodiscard]] std::optional<std::string> evaluate(const DatabaseQuery& query) const override;
+    [[nodiscard]] std::optional<std::string> evaluate(DatabaseQuery& query) const override;
     [[nodiscard]] TokenType getType() const override;
     [[nodiscard]] std::string toString() const override;
     [[nodiscard]] const std::string& getName() const;

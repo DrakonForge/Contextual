@@ -3,12 +3,13 @@
 #include <utility>
 
 #include "ContextTable.h"
+#include "SpeechGenerator.h"
 
 namespace Contextual {
 
 TokenContext::TokenContext(std::string table, std::string key) : m_table(std::move(table)), m_key(std::move(key)) {}
 
-std::optional<std::string> TokenContext::evaluate(const DatabaseQuery& query) const {
+std::optional<std::string> TokenContext::evaluate(DatabaseQuery& query) const {
     std::shared_ptr<ContextTable> contextTable = query.getContextTable(m_table);
     if (contextTable != nullptr) {
         FactType type = contextTable->getType(m_key);
@@ -21,10 +22,10 @@ std::optional<std::string> TokenContext::evaluate(const DatabaseQuery& query) co
         if (type == FactType::kNumber) {
             const std::optional<int>& value = contextTable->getInt(m_key);
             if (value) {
-                // TODO: GET AS INTEGER WORD
-                return std::to_string(*value);
+                return SpeechGenerator::integerToWord(*value);
             }
         }
+        // TODO: Allow list fact type?
     }
     return std::nullopt;
 }

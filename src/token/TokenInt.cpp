@@ -6,7 +6,7 @@ namespace Contextual {
 
 TokenInt::TokenInt(int value) : m_value(value) {}
 
-std::optional<std::string> TokenInt::evaluate(const DatabaseQuery& query) const {
+std::optional<std::string> TokenInt::evaluate(DatabaseQuery& query) const {
     return SpeechGenerator::integerToWord(m_value);
 }
 

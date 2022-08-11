@@ -223,6 +223,10 @@ FunctionVal context(const std::string& key, DatabaseQuery& query) {
     return FunctionVal();
 }
 
+FunctionVal rawNum(int num) {
+    return FunctionVal(std::to_string(num));
+}
+
 }  // namespace
 
 void DefaultFunctionTable::initialize() {
@@ -260,6 +264,7 @@ void DefaultFunctionTable::initialize() {
     registerFunction("or", TokenType::kBool, std::vector<TokenType>{TokenType::kBool, TokenType::kBool}, false);
     registerFunction("not", TokenType::kBool, std::vector<TokenType>{TokenType::kBool}, false);
     registerFunction("context", TokenType::kContext, std::vector<TokenType>{TokenType::kString}, false);
+    registerFunction("raw_num", TokenType::kString, std::vector<TokenType>{TokenType::kInt}, false);
 }
 
 FunctionVal DefaultFunctionTable::doCall(const std::string& name, const std::vector<std::shared_ptr<SymbolToken>>& args,
@@ -497,6 +502,13 @@ FunctionVal DefaultFunctionTable::doCall(const std::string& name, const std::vec
             return FunctionVal();
         }
         return context(*key, query);
+    }
+    if(name == "raw_num") {
+        std::optional<int> n = argToInt(args[0], query);
+        if(!n) {
+            return FunctionVal();
+        }
+        return rawNum(*n);
     }
     return FunctionVal();
 }

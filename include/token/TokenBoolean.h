@@ -7,7 +7,7 @@ namespace Contextual {
 class TokenBoolean : public SymbolToken {
 public:
     explicit TokenBoolean(bool value);
-    [[nodiscard]] std::optional<std::string> evaluate(const DatabaseQuery& query) const override;
+    [[nodiscard]] std::optional<std::string> evaluate(DatabaseQuery& query) const override;
     [[nodiscard]] TokenType getType() const override;
     [[nodiscard]] std::string toString() const override;
     [[nodiscard]] bool getValue() const;

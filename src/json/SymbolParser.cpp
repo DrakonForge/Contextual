@@ -102,31 +102,6 @@ JsonParseResult parseContextToken(std::shared_ptr<SymbolToken>& token, const rap
     return JsonUtils::g_RESULT_SUCCESS;
 }
 
-std::string tokenTypeToString(const TokenType type) {
-    if (type == TokenType::kString) {
-        return g_TYPE_STRING;
-    }
-    if (type == TokenType::kContext) {
-        return g_TYPE_CONTEXT;
-    }
-    if (type == TokenType::kBool) {
-        return g_TYPE_BOOLEAN;
-    }
-    if (type == TokenType::kFloat) {
-        return g_TYPE_FLOAT;
-    }
-    if (type == TokenType::kInt) {
-        return g_TYPE_INTEGER;
-    }
-    if (type == TokenType::kFunction) {
-        return g_TYPE_FUNCTION;
-    }
-    if (type == TokenType::kList) {
-        return g_TYPE_LIST;
-    }
-    return g_TYPE_UNKNOWN;
-}
-
 JsonParseResult parseFunctionToken(std::shared_ptr<SymbolToken>& token, const rapidjson::Value& value,
                                    const std::unordered_map<std::string, std::shared_ptr<SymbolToken>>& symbols,
                                    const FunctionTable& functionTable) {
@@ -296,6 +271,31 @@ JsonParseResult parseSymbol(std::unordered_map<std::string, std::shared_ptr<Symb
 }
 
 }  // namespace
+
+std::string tokenTypeToString(const TokenType type) {
+    if (type == TokenType::kString) {
+        return g_TYPE_STRING;
+    }
+    if (type == TokenType::kContext) {
+        return g_TYPE_CONTEXT;
+    }
+    if (type == TokenType::kBool) {
+        return g_TYPE_BOOLEAN;
+    }
+    if (type == TokenType::kFloat) {
+        return g_TYPE_FLOAT;
+    }
+    if (type == TokenType::kInt) {
+        return g_TYPE_INTEGER;
+    }
+    if (type == TokenType::kFunction) {
+        return g_TYPE_FUNCTION;
+    }
+    if (type == TokenType::kList) {
+        return g_TYPE_LIST;
+    }
+    return g_TYPE_UNKNOWN;
+}
 
 JsonParseResult parseSymbols(std::unordered_map<std::string, std::shared_ptr<SymbolToken>>& symbols,
                              const rapidjson::Value& root, const FunctionTable& functionTable) {

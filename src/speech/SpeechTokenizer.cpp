@@ -5,9 +5,13 @@
 #include <vector>
 
 #include "SpeechToken.h"
+#include "SymbolParser.h"
 #include "TextToken.h"
+#include "TokenBoolean.h"
 #include "TokenContext.h"
+#include "TokenFloat.h"
 #include "TokenFunction.h"
+#include "TokenInt.h"
 #include "TokenString.h"
 
 namespace Contextual::SpeechTokenizer {
@@ -28,6 +32,7 @@ const char g_FORMAT_END = '}';
 const char g_CONTEXT_SEP = '.';
 const char g_ARGS_START = '(';
 const char g_ARGS_END = ')';
+const char g_ARGS_SEP = ',';
 
 const std::string g_ATTR_PAUSE = "pause";
 const std::string g_ATTR_LINEBREAK = "linebreak";
@@ -60,6 +65,13 @@ bool isIdChar(char c) {
     return std::isalpha(c) || std::isdigit(c) || c == '_';
 }
 
+// Forward declare
+SpeechTokenizerResult tokenizeSymbol(int& index, std::vector<std::shared_ptr<SpeechToken>>& tokens,
+                                     const std::string& text,
+                                     const std::unordered_map<std::string, std::shared_ptr<SymbolToken>>& symbols,
+                                     const std::unordered_map<std::string, std::shared_ptr<SymbolToken>>& localSymbols,
+                                     const FunctionTable& functionTable);
+
 SpeechTokenizerResult tokenizePause(int& index, std::vector<std::shared_ptr<SpeechToken>>& tokens,
                                     const std::string& text) {
     int pauseLength = 1;
@@ -75,59 +87,6 @@ SpeechTokenizerResult tokenizePause(int& index, std::vector<std::shared_ptr<Spee
         }
     }
     return {SpeechTokenizerReturnCode::kInvalidFormat, "Line should not end on a pause"};
-}
-
-SpeechTokenizerResult tokenizeFunction(int& index, std::vector<std::shared_ptr<SpeechToken>>& tokens,
-                                       const std::string& text, std::string functionName,
-                                       const std::unordered_map<std::string, std::shared_ptr<SymbolToken>>& symbols,
-                                       const std::unordered_map<std::string, std::shared_ptr<SymbolToken>>& localSymbols,
-                                       const FunctionTable& functionTable) {
-    if (functionName.empty()) {
-        return {SpeechTokenizerReturnCode::kInvalidSyntax, "Function name cannot be empty"};
-    }
-
-    // TODO: Function argument stuff
-    //tokens.push_back(std::make_shared<TokenFunction>(std::move(functionName), ))
-    return g_RESULT_SUCCESS;
-}
-
-SpeechTokenizerResult tokenizeSymbol(int& index, std::vector<std::shared_ptr<SpeechToken>>& tokens,
-                                     const std::string& text,
-                                     const std::unordered_map<std::string, std::shared_ptr<SymbolToken>>& symbols,
-                                     const std::unordered_map<std::string, std::shared_ptr<SymbolToken>>& localSymbols,
-                                     const FunctionTable& functionTable) {
-    std::string symbolName;
-    ++index;
-    while (index < text.size()) {
-        char c = text[index];
-        if (isIdChar(c)) {
-            symbolName.push_back(c);
-            ++index;
-        } else if (c == g_ARGS_START) {
-            // It's a function!
-            return tokenizeFunction(index, tokens, text, std::move(symbolName), symbols, localSymbols, functionTable);
-        } else {
-            break;
-        }
-    }
-
-    if (symbolName.empty()) {
-        return {SpeechTokenizerReturnCode::kInvalidSyntax, "Symbol name cannot be empty"};
-    }
-
-    // Look for the corresponding symbol
-    auto got = symbols.find(symbolName);
-    if (got == symbols.end()) {
-        got = localSymbols.find(symbolName);
-        if (got == localSymbols.end()) {
-            return {SpeechTokenizerReturnCode::kInvalidSymbol,
-                    "Symbol \"" + symbolName + "\" does not exist in this hierarchy"};
-        }
-    }
-
-    // We found it, yay!
-    tokens.push_back(got->second);
-    return g_RESULT_SUCCESS;
 }
 
 SpeechTokenizerResult tokenizeContext(int& index, std::vector<std::shared_ptr<SpeechToken>>& tokens,
@@ -169,6 +128,210 @@ SpeechTokenizerResult tokenizeContext(int& index, std::vector<std::shared_ptr<Sp
         return {SpeechTokenizerReturnCode::kInvalidSyntax, "Context key cannot be empty"};
     }
     tokens.push_back(std::make_shared<TokenContext>(std::move(table), std::move(key)));
+    return g_RESULT_SUCCESS;
+}
+
+SpeechTokenizerResult tokenizeValue(int& index, std::vector<std::shared_ptr<SpeechToken>>& tokens,
+                                    const std::string& text) {
+    // Parse the value
+    std::string value;
+    bool success = false;
+    while (index < text.size()) {
+        char c = text[index];
+        if (c == g_ESCAPE) {
+            if (index >= text.size() - 1) {
+                return {SpeechTokenizerReturnCode::kInvalidSyntax,
+                        "Escape character must be followed by another character"};
+            }
+            char next = text[index + 1];
+            value.push_back(next);
+            index += 2;
+        } else if (c == g_ARGS_SEP || c == g_ARGS_END) {
+            // Done
+            success = true;
+            break;
+        }
+    }
+    if (!success) {
+        return {SpeechTokenizerReturnCode::kInvalidSyntax, "Function arguments were not closed properly"};
+    }
+
+    // Create token based on value
+    if (value == "true") {
+        tokens.push_back(std::make_shared<TokenBoolean>(true));
+        return g_RESULT_SUCCESS;
+    }
+    if (value == "false") {
+        tokens.push_back(std::make_shared<TokenBoolean>(false));
+        return g_RESULT_SUCCESS;
+    }
+
+    int intValue;
+    success = false;
+    try {
+        intValue = std::stoi(value);
+        success = true;
+    } catch (std::invalid_argument& e) {
+        // Not an integer
+    } catch (std::out_of_range& e) {
+        // Not an integer
+    }
+    if (success) {
+        tokens.push_back(std::make_shared<TokenInt>(intValue));
+        return g_RESULT_SUCCESS;
+    }
+
+    float floatValue;
+    // success is guaranteed to be false
+    try {
+        floatValue = std::stof(value);
+        success = true;
+        return g_RESULT_SUCCESS;
+    } catch (std::invalid_argument& e) {
+        // Not a float
+    } catch (std::out_of_range& e) {
+        // Not a float
+    }
+    if (success) {
+        tokens.push_back(std::make_shared<TokenFloat>(floatValue));
+        return g_RESULT_SUCCESS;
+    }
+
+    // Doesn't match anything else--guess it's a string
+    tokens.push_back(std::make_shared<TokenString>(std::move(value)));
+    return g_RESULT_SUCCESS;
+}
+
+SpeechTokenizerResult tokenizeFunction(
+    int& index, std::vector<std::shared_ptr<SpeechToken>>& tokens, const std::string& text, std::string functionName,
+    const std::unordered_map<std::string, std::shared_ptr<SymbolToken>>& symbols,
+    const std::unordered_map<std::string, std::shared_ptr<SymbolToken>>& localSymbols,
+    const FunctionTable& functionTable) {
+    if (functionName.empty()) {
+        return {SpeechTokenizerReturnCode::kInvalidSyntax, "Function name cannot be empty"};
+    }
+    // Check that function exists
+    const auto& sig = functionTable.getSignature(functionName);
+    if (sig == nullptr) {
+        return {SpeechTokenizerReturnCode::kInvalidFunction, "Function \"" + functionName + "\" does not exist"};
+    }
+
+    ++index;
+    bool finishedItem = false;
+    bool success = false;
+    std::vector<std::shared_ptr<SpeechToken>> args;
+    while (index < text.size()) {
+        char c = text[index];
+        if (c == g_ARGS_END) {
+            ++index;
+            success = true;
+            break;
+        }
+        if (finishedItem) {
+            // Expect comma or end of list
+            if (c == g_ARGS_SEP) {
+                finishedItem = false;
+                ++index;
+            } else {
+                return {SpeechTokenizerReturnCode::kInvalidSyntax, "Expected comma or end of list in function args"};
+            }
+        } else if (c == g_CONTEXT_START) {
+            auto result = tokenizeContext(index, args, text);
+            if (result.code != SpeechTokenizerReturnCode::kSuccess) {
+                return result;
+            }
+            finishedItem = true;
+        } else if (c == g_SYMBOL_START) {
+            auto result = tokenizeSymbol(index, args, text, symbols, localSymbols, functionTable);
+            if (result.code != SpeechTokenizerReturnCode::kSuccess) {
+                return result;
+            }
+            finishedItem = true;
+        } else if (c == g_SPACE) {
+            // Consume all spaces
+            ++index;
+        } else {
+            auto result = tokenizeValue(index, args, text);
+            if (result.code != SpeechTokenizerReturnCode::kSuccess) {
+                return result;
+            }
+            finishedItem = true;
+        }
+    }
+    if (!success) {
+        return {SpeechTokenizerReturnCode::kInvalidSyntax, "Function arguments were not closed properly"};
+    }
+
+    // Convert all tokens into SymbolTokens
+    std::vector<std::shared_ptr<SymbolToken>> symbolArgs;
+    symbolArgs.reserve(args.size());
+    for (const auto& arg : args) {
+        if (arg->isSymbolToken()) {
+            symbolArgs.push_back(std::static_pointer_cast<SymbolToken>(arg));
+        } else {
+            return {SpeechTokenizerReturnCode::kInvalidSyntax, "Function cannot have formatting tokens"};
+        }
+    }
+
+    // Validate arguments
+    if (!FunctionTable::validateArgs(sig, symbolArgs)) {
+        std::string argList;
+        if (sig->argTypes.empty()) {
+            argList = "Expected no arguments";
+        } else {
+            std::string varArgsStr;
+            if (sig->hasVarArgs) {
+                varArgsStr = "at least ";
+            }
+            argList = "Expected " + varArgsStr + std::to_string(sig->argTypes.size()) + " arguments of type " +
+                      SymbolParser::tokenTypeToString(sig->argTypes[0]);
+            for (int i = 1; i < sig->argTypes.size(); ++i) {
+                argList += ", " + SymbolParser::tokenTypeToString(sig->argTypes[i]);
+            }
+        }
+        return {SpeechTokenizerReturnCode::kInvalidFunction,
+                "Invalid arguments for function \"" + functionName + "\": " + argList};
+    }
+    tokens.push_back(std::make_shared<TokenFunction>(std::move(functionName), std::move(symbolArgs)));
+    return g_RESULT_SUCCESS;
+}
+
+SpeechTokenizerResult tokenizeSymbol(int& index, std::vector<std::shared_ptr<SpeechToken>>& tokens,
+                                     const std::string& text,
+                                     const std::unordered_map<std::string, std::shared_ptr<SymbolToken>>& symbols,
+                                     const std::unordered_map<std::string, std::shared_ptr<SymbolToken>>& localSymbols,
+                                     const FunctionTable& functionTable) {
+    std::string symbolName;
+    ++index;
+    while (index < text.size()) {
+        char c = text[index];
+        if (isIdChar(c)) {
+            symbolName.push_back(c);
+            ++index;
+        } else if (c == g_ARGS_START) {
+            // It's a function!
+            return tokenizeFunction(index, tokens, text, std::move(symbolName), symbols, localSymbols, functionTable);
+        } else {
+            break;
+        }
+    }
+
+    if (symbolName.empty()) {
+        return {SpeechTokenizerReturnCode::kInvalidSyntax, "Symbol name cannot be empty"};
+    }
+
+    // Look for the corresponding symbol
+    auto got = symbols.find(symbolName);
+    if (got == symbols.end()) {
+        got = localSymbols.find(symbolName);
+        if (got == localSymbols.end()) {
+            return {SpeechTokenizerReturnCode::kInvalidSymbol,
+                    "Symbol \"" + symbolName + "\" does not exist in this hierarchy"};
+        }
+    }
+
+    // We found it, yay!
+    tokens.push_back(got->second);
     return g_RESULT_SUCCESS;
 }
 

@@ -4,7 +4,7 @@ namespace Contextual {
 
 TokenBoolean::TokenBoolean(bool value) : m_value(value) {}
 
-std::optional<std::string> TokenBoolean::evaluate(const DatabaseQuery& query) const {
+std::optional<std::string> TokenBoolean::evaluate(DatabaseQuery& query) const {
     // Boolean tokens should not be evaluated to string
     return std::nullopt;
 }
