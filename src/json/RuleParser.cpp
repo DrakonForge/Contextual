@@ -578,6 +578,9 @@ JsonParseResult parseRule(StringTable& stringTable, std::unique_ptr<RuleEntry>& 
     // Reads local symbols from key "Symbols" if it exists
     std::unordered_map<std::string, std::shared_ptr<SymbolToken>> localSymbols;
     result = SymbolParser::parseSymbols(localSymbols, root);
+    if (result.code != JsonParseReturnCode::kSuccess) {
+        return result;
+    }
 
     std::shared_ptr<Response> response;
     result = parseResponse(response, root, parsingType, symbols, localSymbols);
