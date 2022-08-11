@@ -15,6 +15,7 @@ enum class JsonParseReturnCode : uint32_t {
     kInvalidSyntax = 11,
     kInvalidType = 12,
     kInvalidValue = 13,
+    kInvalidFunction = 14,
     kMissingKey = 20,
     kMissingSymbol = 21,
     kMissingRule = 22,

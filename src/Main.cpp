@@ -71,13 +71,14 @@ void testDatabaseLoading() {
 }
 
 void testTextParsing(const std::string& str) {
+    Contextual::ContextManager contextManager = createDefaultContextManager();
     std::vector<std::shared_ptr<Contextual::SpeechToken>> tokens;
     const std::unordered_map<std::string, std::shared_ptr<Contextual::SymbolToken>> symbols;
     const std::unordered_map<std::string, std::shared_ptr<Contextual::SymbolToken>> localSymbols;
 
     std::cout << "Target string: \"" << str << "\""
               << "\n";
-    auto result = Contextual::SpeechTokenizer::tokenize(tokens, str, symbols, localSymbols);
+    auto result = Contextual::SpeechTokenizer::tokenize(tokens, str, symbols, localSymbols, contextManager.getFunctionTable());
     if (result.code == Contextual::SpeechTokenizerReturnCode::kSuccess) {
         std::cout << "Success!"
                   << "\n";

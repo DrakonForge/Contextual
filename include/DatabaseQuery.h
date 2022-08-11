@@ -11,6 +11,9 @@
 
 namespace Contextual {
 
+class ContextTable;
+class ContextManager;
+
 class DatabaseQuery {
 public:
     enum class WillFail : uint8_t { kNormal, kAlways, kNever };

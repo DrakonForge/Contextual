@@ -16,14 +16,6 @@ const std::unique_ptr<FunctionSig> g_NOT_FOUND = std::make_unique<FunctionSig>()
 
 }  // namespace
 
-const std::unique_ptr<FunctionSig>& FunctionTable::getSignature(const std::string& name) const {
-    auto got = m_functionLookup.find(name);
-    if (got == m_functionLookup.end()) {
-        return g_NOT_FOUND;
-    }
-    return got->second;
-}
-
 // Performs preliminary typechecking to see if arguments can be converted properly
 bool FunctionTable::matches(TokenType targetType, TokenType type) {
     // Function and Context are "any" types
@@ -45,6 +37,38 @@ bool FunctionTable::matches(TokenType targetType, TokenType type) {
     return targetType == type;
 }
 
+bool FunctionTable::validateArgs(const std::unique_ptr<FunctionSig>& sig, const std::vector<std::shared_ptr<SymbolToken>>& args) {
+    if (sig->argTypes.empty()) {
+        // Function should not have any args
+        return args.empty();
+    } else {
+        // Check size
+        if (args.size() != sig->argTypes.size() || (sig->hasVarArgs && args.size() < sig->argTypes.size())) {
+            // Incorrect number of arguments
+            return false;
+        }
+        const TokenType lastType = sig->argTypes[sig->argTypes.size() - 1];
+        for (int i = 0; i < args.size(); ++i) {
+            if (i < sig->argTypes.size()) {
+                if (!matches(sig->argTypes[i], args[i]->getType())) {
+                    return false;
+                }
+            } else if (!sig->hasVarArgs || !matches(lastType, args[i]->getType())) {
+                return false;
+            }
+        }
+        return true;
+    }
+}
+
+const std::unique_ptr<FunctionSig>& FunctionTable::getSignature(const std::string& name) const {
+    auto got = m_functionLookup.find(name);
+    if (got == m_functionLookup.end()) {
+        return g_NOT_FOUND;
+    }
+    return got->second;
+}
+
 FunctionVal FunctionTable::call(const std::string& name, const std::vector<std::shared_ptr<SymbolToken>>& args,
                                 DatabaseQuery& query) const {
     auto got = m_functionLookup.find(name);
@@ -55,29 +79,8 @@ FunctionVal FunctionTable::call(const std::string& name, const std::vector<std::
     const std::unique_ptr<FunctionSig>& sig = got->second;
 
     // Check arguments
-    if (sig->argTypes.empty()) {
-        // Function should not have any args
-        if (!args.empty()) {
-            return FunctionVal();
-        }
-        // Pass
-    } else {
-        // Check size
-        if (args.size() != sig->argTypes.size() || (sig->hasVarArgs && args.size() < sig->argTypes.size())) {
-            // Incorrect number of arguments
-            return FunctionVal();
-        }
-        const TokenType lastType = sig->argTypes[sig->argTypes.size() - 1];
-        for (int i = 0; i < args.size(); ++i) {
-            if (i < sig->argTypes.size()) {
-                if (!matches(sig->argTypes[i], args[i]->getType())) {
-                    return FunctionVal();
-                }
-            } else if (!sig->hasVarArgs || !matches(lastType, args[i]->getType())) {
-                return FunctionVal();
-            }
-        }
-        // Pass
+    if(!validateArgs(sig, args)) {
+        return FunctionVal();
     }
 
     // Call function

@@ -9,6 +9,8 @@
 namespace Contextual {
 
 class ContextTable;
+class FunctionTable;
+
 class ContextManager {
 public:
     ContextManager(const FunctionTable& functionTable);

@@ -9,6 +9,8 @@
 
 namespace Contextual {
 
+class DatabaseQuery;
+
 class SymbolToken : public SpeechToken {
 public:
     [[nodiscard]] virtual std::optional<std::string> evaluate(const DatabaseQuery& query) const = 0;

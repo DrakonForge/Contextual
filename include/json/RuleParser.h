@@ -17,6 +17,7 @@ struct RuleInfo {
 JsonParseResult parseRule(StringTable& stringTable, std::unique_ptr<RuleEntry>& rule,
                           std::unordered_map<std::string, RuleInfo>& namedRules, int& nextId,
                           const rapidjson::Value& root, const std::string& idPrefix, ParsingType parsingType,
-                          const std::unordered_map<std::string, std::shared_ptr<SymbolToken>>& symbols);
+                          const std::unordered_map<std::string, std::shared_ptr<SymbolToken>>& symbols,
+                          const FunctionTable& functionTable);
 
 }  // namespace Contextual::RuleParser

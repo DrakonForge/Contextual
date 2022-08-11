@@ -7,6 +7,7 @@
 #include "SpeechToken.h"
 #include "TextToken.h"
 #include "TokenContext.h"
+#include "TokenFunction.h"
 #include "TokenString.h"
 
 namespace Contextual::SpeechTokenizer {
@@ -76,10 +77,25 @@ SpeechTokenizerResult tokenizePause(int& index, std::vector<std::shared_ptr<Spee
     return {SpeechTokenizerReturnCode::kInvalidFormat, "Line should not end on a pause"};
 }
 
-SpeechTokenizerResult tokenizeSymbol(
-    int& index, std::vector<std::shared_ptr<SpeechToken>>& tokens, const std::string& text,
-    const std::unordered_map<std::string, std::shared_ptr<SymbolToken>>& symbols,
-    const std::unordered_map<std::string, std::shared_ptr<SymbolToken>>& localSymbols) {
+SpeechTokenizerResult tokenizeFunction(int& index, std::vector<std::shared_ptr<SpeechToken>>& tokens,
+                                       const std::string& text, std::string functionName,
+                                       const std::unordered_map<std::string, std::shared_ptr<SymbolToken>>& symbols,
+                                       const std::unordered_map<std::string, std::shared_ptr<SymbolToken>>& localSymbols,
+                                       const FunctionTable& functionTable) {
+    if (functionName.empty()) {
+        return {SpeechTokenizerReturnCode::kInvalidSyntax, "Function name cannot be empty"};
+    }
+
+    // TODO: Function argument stuff
+    //tokens.push_back(std::make_shared<TokenFunction>(std::move(functionName), ))
+    return g_RESULT_SUCCESS;
+}
+
+SpeechTokenizerResult tokenizeSymbol(int& index, std::vector<std::shared_ptr<SpeechToken>>& tokens,
+                                     const std::string& text,
+                                     const std::unordered_map<std::string, std::shared_ptr<SymbolToken>>& symbols,
+                                     const std::unordered_map<std::string, std::shared_ptr<SymbolToken>>& localSymbols,
+                                     const FunctionTable& functionTable) {
     std::string symbolName;
     ++index;
     while (index < text.size()) {
@@ -89,12 +105,7 @@ SpeechTokenizerResult tokenizeSymbol(
             ++index;
         } else if (c == g_ARGS_START) {
             // It's a function!
-            if (symbolName.empty()) {
-                return {SpeechTokenizerReturnCode::kInvalidSyntax, "Function name cannot be empty"};
-            }
-
-            // TODO: Function argument stuff
-            return g_RESULT_SUCCESS;
+            return tokenizeFunction(index, tokens, text, std::move(symbolName), symbols, localSymbols, functionTable);
         } else {
             break;
         }
@@ -327,7 +338,8 @@ SpeechTokenizerResult validate(const std::vector<std::shared_ptr<SpeechToken>>& 
 
 SpeechTokenizerResult tokenize(std::vector<std::shared_ptr<SpeechToken>>& tokens, const std::string& text,
                                const std::unordered_map<std::string, std::shared_ptr<SymbolToken>>& symbols,
-                               const std::unordered_map<std::string, std::shared_ptr<SymbolToken>>& localSymbols) {
+                               const std::unordered_map<std::string, std::shared_ptr<SymbolToken>>& localSymbols,
+                               const FunctionTable& functionTable) {
     std::string nextString;
     int index = 0;
     int numStars = 0;
@@ -385,7 +397,7 @@ SpeechTokenizerResult tokenize(std::vector<std::shared_ptr<SpeechToken>>& tokens
             }
         } else if (c == g_SYMBOL_START) {
             finishStringToken(nextString, tokens);
-            auto result = tokenizeSymbol(index, tokens, text, symbols, localSymbols);
+            auto result = tokenizeSymbol(index, tokens, text, symbols, localSymbols, functionTable);
             if (result.code != SpeechTokenizerReturnCode::kSuccess) {
                 return result;
             }

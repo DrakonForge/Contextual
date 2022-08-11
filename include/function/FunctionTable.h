@@ -11,6 +11,9 @@
 
 namespace Contextual {
 
+class DatabaseQuery;
+class SymbolToken;
+
 struct FunctionVal {
     bool error;
     TokenType type;
@@ -46,13 +49,14 @@ struct FunctionSig {
 
 class FunctionTable {
 public:
+    static bool validateArgs(const std::unique_ptr<FunctionSig>& sig, const std::vector<std::shared_ptr<SymbolToken>>& args);
+    static bool matches(TokenType targetType, TokenType type);
     virtual void initialize() = 0;
     const std::unique_ptr<FunctionSig>& getSignature(const std::string& name) const;
     FunctionVal call(const std::string& name, const std::vector<std::shared_ptr<SymbolToken>>& args,
                      DatabaseQuery& query) const;
 
 protected:
-    static bool matches(TokenType targetType, TokenType type);
     void registerFunction(std::string, TokenType returnType, std::vector<TokenType> argTypes, bool hasVarArgs);
     virtual FunctionVal doCall(const std::string& name, const std::vector<std::shared_ptr<SymbolToken>>& args,
                                DatabaseQuery& query) const = 0;

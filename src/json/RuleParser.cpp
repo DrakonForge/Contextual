@@ -11,6 +11,8 @@
 #include "CriterionStatic.h"
 #include "response/ResponseMultiple.h"
 #include "response/ResponseSimple.h"
+#include "ResponseSpeech.h"
+#include "SpeechTokenizer.h"
 #include "SymbolParser.h"
 
 namespace Contextual::RuleParser {
@@ -473,8 +475,29 @@ JsonParseResult parseCriteria(std::vector<std::shared_ptr<Criteria>>& criteria, 
 
 JsonParseResult parseSpeechResponse(std::shared_ptr<Response>& response, const rapidjson::Value& value,
                                     const std::unordered_map<std::string, std::shared_ptr<SymbolToken>>& symbols,
-                                    const std::unordered_map<std::string, std::shared_ptr<SymbolToken>>& localSymbols) {
-    // TODO: Tokenize in SpeechParser
+                                    const std::unordered_map<std::string, std::shared_ptr<SymbolToken>>& localSymbols,
+                                    const FunctionTable& functionTable) {
+    if (!value.IsArray()) {
+        return {JsonParseReturnCode::kInvalidType, "Speech response value must be an array"};
+    }
+    std::vector<std::vector<std::shared_ptr<SpeechToken>>> speechLines;
+    speechLines.reserve(value.Size());
+
+    for (auto iter = value.Begin(); iter != value.End(); ++iter) {
+        const auto& line = *iter;
+        if (!line.IsString()) {
+            return {JsonParseReturnCode::kInvalidType, "All values in a speech response array must be a string"};
+        }
+        std::vector<std::shared_ptr<SpeechToken>> speechLine;
+        const std::string& lineStr = line.GetString();
+        auto result = SpeechTokenizer::tokenize(speechLine, lineStr, symbols, localSymbols, functionTable);
+        if(result.code != SpeechTokenizerReturnCode::kSuccess) {
+            return {JsonParseReturnCode::kInvalidValue, "Failed to parse speech line \"" + lineStr + "\": " + result.errorMsg};
+        }
+        speechLines.push_back(speechLine);
+    }
+
+    response = std::make_shared<ResponseSpeech>(std::move(speechLines));
     return JsonUtils::g_RESULT_SUCCESS;
 }
 
@@ -489,6 +512,7 @@ JsonParseResult parseSimpleResponse(std::shared_ptr<Response>& response, const r
         if (!option.IsString()) {
             return {JsonParseReturnCode::kInvalidType, "All values in a simple response array must be a string"};
         }
+        options.emplace_back(option.GetString());
     }
     response = std::make_shared<ResponseSimple>(std::move(options));
     return JsonUtils::g_RESULT_SUCCESS;
@@ -497,7 +521,8 @@ JsonParseResult parseSimpleResponse(std::shared_ptr<Response>& response, const r
 JsonParseResult parseResponseObject(std::shared_ptr<Response>& response, const rapidjson::Value& root,
                                     const ParsingType parsingType,
                                     const std::unordered_map<std::string, std::shared_ptr<SymbolToken>>& symbols,
-                                    const std::unordered_map<std::string, std::shared_ptr<SymbolToken>>& localSymbols) {
+                                    const std::unordered_map<std::string, std::shared_ptr<SymbolToken>>& localSymbols,
+                                    const FunctionTable& functionTable) {
     if (!root.IsObject()) {
         return {JsonParseReturnCode::kInvalidType, "Response must be a JSON object"};
     }
@@ -516,7 +541,7 @@ JsonParseResult parseResponseObject(std::shared_ptr<Response>& response, const r
 
     if (type == g_RESPONSE_RANDOM) {
         if (parsingType == ParsingType::kSpeechbank) {
-            return parseSpeechResponse(response, value, symbols, localSymbols);
+            return parseSpeechResponse(response, value, symbols, localSymbols, functionTable);
         }
         return parseSimpleResponse(response, value);
     }
@@ -528,7 +553,8 @@ JsonParseResult parseResponseObject(std::shared_ptr<Response>& response, const r
 JsonParseResult parseResponse(std::shared_ptr<Response>& response, const rapidjson::Value& root,
                               const ParsingType parsingType,
                               const std::unordered_map<std::string, std::shared_ptr<SymbolToken>>& symbols,
-                              const std::unordered_map<std::string, std::shared_ptr<SymbolToken>>& localSymbols) {
+                              const std::unordered_map<std::string, std::shared_ptr<SymbolToken>>& localSymbols,
+                              const FunctionTable& functionTable) {
     if (root.HasMember(g_KEY_RESPONSE)) {
         const auto& value = root[g_KEY_RESPONSE];
         if (!value.IsArray()) {
@@ -539,12 +565,12 @@ JsonParseResult parseResponse(std::shared_ptr<Response>& response, const rapidjs
         }
         if (value.Size() == 1) {
             // Single response
-            return parseResponseObject(response, value[0], parsingType, symbols, localSymbols);
+            return parseResponseObject(response, value[0], parsingType, symbols, localSymbols, functionTable);
         } else {
             std::vector<std::shared_ptr<Response>> responses;
             for (auto iter = value.Begin(); iter != value.End(); ++iter) {
                 std::shared_ptr<Response> item;
-                auto result = parseResponseObject(item, *iter, parsingType, symbols, localSymbols);
+                auto result = parseResponseObject(item, *iter, parsingType, symbols, localSymbols, functionTable);
                 if (result.code != JsonParseReturnCode::kSuccess) {
                     return result;
                 }
@@ -563,7 +589,8 @@ JsonParseResult parseResponse(std::shared_ptr<Response>& response, const rapidjs
 JsonParseResult parseRule(StringTable& stringTable, std::unique_ptr<RuleEntry>& rule,
                           std::unordered_map<std::string, RuleInfo>& namedRules, int& nextId,
                           const rapidjson::Value& root, const std::string& idPrefix, const ParsingType parsingType,
-                          const std::unordered_map<std::string, std::shared_ptr<SymbolToken>>& symbols) {
+                          const std::unordered_map<std::string, std::shared_ptr<SymbolToken>>& symbols,
+                          const FunctionTable& functionTable) {
     if (!root.IsObject()) {
         return {JsonParseReturnCode::kInvalidType, "Rule must be a JSON object"};
     }
@@ -577,13 +604,13 @@ JsonParseResult parseRule(StringTable& stringTable, std::unique_ptr<RuleEntry>& 
 
     // Reads local symbols from key "Symbols" if it exists
     std::unordered_map<std::string, std::shared_ptr<SymbolToken>> localSymbols;
-    result = SymbolParser::parseSymbols(localSymbols, root);
+    result = SymbolParser::parseSymbols(localSymbols, root, functionTable);
     if (result.code != JsonParseReturnCode::kSuccess) {
         return result;
     }
 
     std::shared_ptr<Response> response;
-    result = parseResponse(response, root, parsingType, symbols, localSymbols);
+    result = parseResponse(response, root, parsingType, symbols, localSymbols, functionTable);
     if (result.code != JsonParseReturnCode::kSuccess) {
         return result;
     }

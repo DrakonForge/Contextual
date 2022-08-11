@@ -116,8 +116,8 @@ JsonParseResult parseCategory(ParsedData& parsedData, std::unordered_map<std::st
     StringTable& stringTable = parsedData.database.getContextManager().getStringTable();
     for (auto iter = rulesValue.Begin(); iter != rulesValue.End(); ++iter) {
         std::unique_ptr<RuleEntry> ruleEntry;
-        result =
-            RuleParser::parseRule(stringTable, ruleEntry, namedRules, nextId, *iter, idPrefix, parsingType, symbols);
+        result = RuleParser::parseRule(stringTable, ruleEntry, namedRules, nextId, *iter, idPrefix, parsingType,
+                                       symbols, parsedData.database.getContextManager().getFunctionTable());
         if (result.code == JsonParseReturnCode::kSkipCreation) {
             continue;
         }
@@ -172,7 +172,7 @@ JsonParseResult parseGroup(ParsedData& parsedData, const rapidjson::Value& root,
         if (parsedParent) {
             symbols.insert(parsedParent->symbols.begin(), parsedParent->symbols.end());
         }
-        result = SymbolParser::parseSymbols(symbols, root);
+        result = SymbolParser::parseSymbols(symbols, root, parsedData.database.getContextManager().getFunctionTable());
         if (result.code != JsonParseReturnCode::kSuccess) {
             return result;
         }
