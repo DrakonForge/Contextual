@@ -1,5 +1,6 @@
 #include "token/TokenFunction.h"
 
+#include <random>
 #include <utility>
 
 #include "SpeechGenerator.h"
@@ -10,21 +11,23 @@ TokenFunction::TokenFunction(std::string name, std::vector<std::shared_ptr<Symbo
     : m_name(std::move(name)), m_args(std::move(args)) {}
 
 std::optional<std::string> TokenFunction::evaluate(DatabaseQuery& query) const {
-    // TODO: Evaluate function
     FunctionVal val = query.getFunctionTable().call(m_name, m_args, query);
-    if(val.error) {
+    if (val.error) {
         return std::nullopt;
     }
-    if(val.type == TokenType::kList) {
-        // TODO
+    if (val.type == TokenType::kList && val.isStringList) {
+        static std::default_random_engine e;
+        std::uniform_int_distribution<size_t> dis(0, val.listVal.size());
+        size_t index = dis(e);
+        return query.getStringTable().lookup(val.listVal[index]).value_or("NULL");
     }
-    if(val.type == TokenType::kString) {
+    if (val.type == TokenType::kString) {
         return val.stringVal;
     }
-    if(val.type == TokenType::kInt) {
+    if (val.type == TokenType::kInt) {
         return SpeechGenerator::integerToWord(val.intVal);
     }
-    if(val.type == TokenType::kFloat) {
+    if (val.type == TokenType::kFloat) {
         int intVal = static_cast<int>(val.floatVal);
         return SpeechGenerator::integerToWord(intVal);
     }

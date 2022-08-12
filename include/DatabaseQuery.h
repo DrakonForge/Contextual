@@ -11,8 +11,9 @@
 
 namespace Contextual {
 
-class ContextTable;
 class ContextManager;
+class ContextTable;
+class FunctionTable;
 
 class DatabaseQuery {
 public:

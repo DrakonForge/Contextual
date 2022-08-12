@@ -104,7 +104,7 @@ std::optional<std::string> FunctionTable::argToString(const std::shared_ptr<Symb
     return token->evaluate(query);
 }
 
-std::optional<std::unordered_set<int>> FunctionTable::argToList(const std::shared_ptr<SymbolToken>& token,
+std::optional<std::pair<std::vector<int>, bool>> FunctionTable::argToList(const std::shared_ptr<SymbolToken>& token,
                                                                 DatabaseQuery& query) const {
     if (token->getType() == TokenType::kContext) {
         const auto& contextToken = std::static_pointer_cast<TokenContext>(token);
@@ -116,34 +116,45 @@ std::optional<std::unordered_set<int>> FunctionTable::argToList(const std::share
         if (ptr == nullptr) {
             return std::nullopt;
         }
-        return *ptr;
+        std::vector<int> vec;
+        vec.reserve(ptr->size());
+        for(const auto& item : *ptr) {
+            vec.push_back(item);
+        }
+        bool isStringList = contextTable->isStringList(contextToken->getKey());
+        return std::make_pair(vec, isStringList);
     }
     if (token->getType() == TokenType::kFunction) {
         const auto& functionToken = std::static_pointer_cast<TokenFunction>(token);
         FunctionVal result = call(functionToken->getName(), functionToken->getArgs(), query);
         if (!result.error && result.type == TokenType::kList) {
-            return result.listVal;
+            return std::make_pair(result.listVal, result.isStringList);
         }
         return std::nullopt;
     }
     if (token->getType() == TokenType::kList) {
         const auto& listToken = std::static_pointer_cast<TokenList>(token);
-        std::unordered_set<int> result;
+        std::vector<int> result;
         const auto& items = listToken->getValue();
+        bool allStrings = true;
         for (const auto& item : items) {
-            std::optional<int> num = argToListItem(item, query);
+            bool isString = false;
+            std::optional<int> num = argToListItem(isString, item, query);
             if (num) {
-                result.insert(*num);
+                result.push_back(*num);
+                if(!isString) {
+                    allStrings = false;
+                }
             } else {
                 return std::nullopt;
             }
         }
-        return result;
+        return std::make_pair(result, allStrings);
     }
     return std::nullopt;
 }
 
-std::optional<int> FunctionTable::argToListItem(const std::shared_ptr<SymbolToken>& token, DatabaseQuery& query) const {
+std::optional<int> FunctionTable::argToListItem(bool& isString, const std::shared_ptr<SymbolToken>& token, DatabaseQuery& query) const {
     if (token->getType() == TokenType::kContext) {
         const auto& contextToken = std::static_pointer_cast<TokenContext>(token);
         const std::shared_ptr<ContextTable>& contextTable = query.getContextTable(contextToken->getTable());
@@ -152,6 +163,7 @@ std::optional<int> FunctionTable::argToListItem(const std::shared_ptr<SymbolToke
         }
         FactType type = contextTable->getType(contextToken->getKey());
         if (type == FactType::kNumber || type == FactType::kString) {
+            isString = type == FactType::kString;
             return contextTable->getRawValue(contextToken->getKey());
         }
         return std::nullopt;
@@ -167,6 +179,7 @@ std::optional<int> FunctionTable::argToListItem(const std::shared_ptr<SymbolToke
                 return result.floatVal;
             }
             if (result.type == TokenType::kString) {
+                isString = true;
                 return query.getStringTable().cache(result.stringVal);
             }
         }
@@ -181,6 +194,7 @@ std::optional<int> FunctionTable::argToListItem(const std::shared_ptr<SymbolToke
         return floatToken->getValue();
     }
     if (token->getType() == TokenType::kString) {
+        isString = true;
         const auto& strToken = std::static_pointer_cast<TokenString>(token);
         return query.getStringTable().cache(strToken->getValue());
     }

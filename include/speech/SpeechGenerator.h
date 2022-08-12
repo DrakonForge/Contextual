@@ -13,7 +13,7 @@ enum class SpeechGeneratorResult { kSuccess, kFailure };
 
 namespace SpeechGenerator {
 
-SpeechGeneratorResult generateLine(std::vector<std::shared_ptr<TextToken>>& speechLine, const DatabaseQuery& query,
+SpeechGeneratorResult generateLine(std::vector<std::shared_ptr<TextToken>>& speechLine, DatabaseQuery& query,
                                    const std::vector<std::shared_ptr<SpeechToken>>& speechTokens);
 std::string getRawSpeechLine(const std::vector<std::shared_ptr<TextToken>>& speechLine);
 std::string integerToOrdinal(int num);

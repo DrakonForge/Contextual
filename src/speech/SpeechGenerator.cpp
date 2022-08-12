@@ -122,7 +122,7 @@ std::string helper(const int num) {
 
 }  // namespace
 
-SpeechGeneratorResult generateLine(std::vector<std::shared_ptr<TextToken>>& speechLine, const DatabaseQuery& query,
+SpeechGeneratorResult generateLine(std::vector<std::shared_ptr<TextToken>>& speechLine, DatabaseQuery& query,
                                    const std::vector<std::shared_ptr<SpeechToken>>& speechTokens) {
     bool hasText = false;
     for (const auto& token : speechTokens) {

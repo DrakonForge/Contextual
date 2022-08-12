@@ -88,18 +88,18 @@ FunctionVal reflexive(const std::string& gender) {
     return FunctionVal(g_REFLEXIVE[index]);
 }
 
-FunctionVal listConcat(const std::vector<std::unordered_set<int>>& lists) {
+FunctionVal listConcat(const std::vector<std::vector<int>>& lists, bool isStringList) {
     size_t size = 0;
     for (const auto& list : lists) {
         size += list.size();
     }
 
-    std::unordered_set<int> result;
+    std::vector<int> result;
     result.reserve(size);
     for (const auto& list : lists) {
-        result.insert(list.begin(), list.end());
+        result.insert(result.end(), list.begin(), list.end());
     }
-    return FunctionVal(result);
+    return FunctionVal(result, isStringList);
 }
 
 FunctionVal prev(int index, DatabaseQuery& query) {
@@ -107,7 +107,7 @@ FunctionVal prev(int index, DatabaseQuery& query) {
     return FunctionVal();
 }
 
-FunctionVal prevMatch(int index, const std::unordered_set<int>& list, DatabaseQuery& query) {
+FunctionVal prevMatch(int index, const std::vector<int>& list, DatabaseQuery& query) {
     // TODO Implement
     return FunctionVal();
 }
@@ -119,7 +119,7 @@ FunctionVal pluralize(int count, std::string singular, std::string plural) {
     return FunctionVal(std::move(plural));
 }
 
-FunctionVal count(const std::unordered_set<int>& list) {
+FunctionVal count(const std::vector<int>& list) {
     return FunctionVal(static_cast<int>(list.size()));
 }
 
@@ -330,16 +330,20 @@ FunctionVal DefaultFunctionTable::doCall(const std::string& name, const std::vec
         return reflexive(*gender);
     }
     if (name == "list_concat") {
-        std::vector<std::unordered_set<int>> lists;
+        std::vector<std::vector<int>> lists;
         lists.reserve(args.size());
+        bool isStringList = true;
         for (const auto& arg : args) {
-            std::optional<std::unordered_set<int>> list = argToList(arg, query);
+            std::optional<std::pair<std::vector<int>, bool>> list = argToList(arg, query);
             if (!list) {
                 return FunctionVal();
             }
-            lists.push_back(std::move(*list));
+            lists.push_back(std::move(list->first));
+            if(!list->second) {
+                isStringList = false;
+            }
         }
-        return listConcat(lists);
+        return listConcat(lists, isStringList);
     }
     if (name == "prev") {
         std::optional<int> index = argToInt(args[0], query);
@@ -350,11 +354,11 @@ FunctionVal DefaultFunctionTable::doCall(const std::string& name, const std::vec
     }
     if (name == "prev_match") {
         std::optional<int> index = argToInt(args[0], query);
-        std::optional<std::unordered_set<int>> list = argToList(args[1], query);
-        if (!index || !list) {
+        std::optional<std::pair<std::vector<int>, bool>> list = argToList(args[1], query);
+        if (!index || !list || !list->second) {
             return FunctionVal();
         }
-        return prevMatch(*index, *list, query);
+        return prevMatch(*index, list->first, query);
     }
     if (name == "pluralize") {
         std::optional<int> count = argToInt(args[0], query);
@@ -366,11 +370,11 @@ FunctionVal DefaultFunctionTable::doCall(const std::string& name, const std::vec
         return pluralize(*count, *singular, *plural);
     }
     if (name == "count") {
-        std::optional<std::unordered_set<int>> list = argToList(args[1], query);
+        std::optional<std::pair<std::vector<int>, bool>> list = argToList(args[1], query);
         if (!list) {
             return FunctionVal();
         }
-        return count(*list);
+        return count(list->first);
     }
     if (name == "concat") {
         std::vector<std::string> strings;

@@ -1,6 +1,7 @@
 #include <filesystem>
 #include <iostream>
 #include <iterator>
+#include <vector>
 
 #include "ContextTable.h"
 #include "DatabaseParser.h"
@@ -16,7 +17,7 @@ void print(std::unordered_set<int> const& s) {
     std::copy(s.begin(), s.end(), std::ostream_iterator<int>(std::cout, " "));
 }
 
-void print(std::unordered_set<std::string> const& s) {
+void print(std::vector<std::string> const& s) {
     std::copy(s.begin(), s.end(), std::ostream_iterator<std::string>(std::cout, " "));
 }
 
@@ -49,7 +50,7 @@ void testContext() {
     std::cout << "Name: " << contextTable->getString("Name").value_or("-999") << "\n";
     std::cout << "IsAlive: " << contextTable->getBool("IsAlive").value_or(-999) << "\n";
     std::cout << "Equipment: ";
-    print(contextTable->toStringList("Equipment").value_or(std::unordered_set<std::string>()));
+    print(contextTable->toStringList("Equipment").value_or(std::vector<std::string>()));
     std::cout << "\n";
 }
 

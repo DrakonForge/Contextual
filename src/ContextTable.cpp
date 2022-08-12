@@ -33,11 +33,15 @@ void ContextTable::set(const std::string& key, bool boolValue) {
     m_basicContext.emplace(key, tuple);
 }
 
-void ContextTable::set(const std::string& key, std::unique_ptr<std::unordered_set<int>>& listValue) {
+void ContextTable::set(const std::string& key, std::unique_ptr<std::unordered_set<int>>& listValue, bool isStringList) {
     if (!m_listContext) {
-        m_listContext = std::unordered_map<std::string, std::unique_ptr<std::unordered_set<int>>>();
+        m_listContext = std::unordered_map<std::string, std::pair<std::unique_ptr<std::unordered_set<int>>, bool>>();
     }
-    m_listContext->emplace(key, std::move(listValue));
+    m_listContext->emplace(key, std::make_pair(std::move(listValue), isStringList));
+}
+
+void ContextTable::set(const std::string& key, std::unique_ptr<std::unordered_set<int>>& listValue) {
+    set(key, listValue, false);
 }
 
 void ContextTable::set(const std::string& key, const std::unordered_set<const char*>& listValue) {
@@ -46,7 +50,7 @@ void ContextTable::set(const std::string& key, const std::unordered_set<const ch
     for (const char* cStr : listValue) {
         intValues->insert(symbolTable.cache(std::string(cStr)));
     }
-    set(key, intValues);
+    set(key, intValues, true);
 }
 
 void ContextTable::set(const std::string& key, const std::unordered_set<std::string>& listValue) {
@@ -55,7 +59,7 @@ void ContextTable::set(const std::string& key, const std::unordered_set<std::str
     for (const std::string& str : listValue) {
         intValues->insert(symbolTable.cache(str));
     }
-    set(key, intValues);
+    set(key, intValues, true);
 }
 
 std::optional<std::string> ContextTable::getString(const std::string& key) const {
@@ -92,21 +96,44 @@ std::optional<bool> ContextTable::getBool(const std::string& key) const {
 }
 
 const std::unique_ptr<std::unordered_set<int>>& ContextTable::getList(const std::string& key) const {
-    if (!m_listContext || m_listContext->find(key) == m_listContext->end()) {
+    if (!m_listContext) {
         return g_NOT_FOUND;
     }
-    return m_listContext->at(key);
+    auto got = m_listContext->find(key);
+    if(got == m_listContext->end()) {
+        return g_NOT_FOUND;
+    }
+    return got->second.first;
 }
 
-std::optional<std::unordered_set<std::string>> ContextTable::toStringList(const std::string& key) const {
-    const auto& intList = getList(key);
-    if (intList == nullptr) {
+bool ContextTable::isStringList(const std::string& key) const {
+    if (!m_listContext) {
+        return false;
+    }
+    auto got = m_listContext->find(key);
+    if(got == m_listContext->end()) {
+        return false;
+    }
+    return got->second.second;
+}
+
+std::optional<std::vector<std::string>> ContextTable::toStringList(const std::string& key) const {
+    if (!m_listContext) {
         return std::nullopt;
     }
-    std::unordered_set<std::string> strList;
-    StringTable& symbolTable = m_manager.getStringTable();
-    for (auto value : *intList) {
-        strList.insert(symbolTable.lookup(value).value_or("NULL"));
+    auto got = m_listContext->find(key);
+    if(got == m_listContext->end()) {
+        return std::nullopt;
+    }
+    if(!got->second.second) {
+        return std::nullopt;
+    }
+
+    std::vector<std::string> strList;
+    strList.reserve(got->second.first->size());
+    StringTable& stringTable = m_manager.getStringTable();
+    for (auto value : *got->second.first) {
+        strList.push_back(stringTable.lookup(value).value_or("NULL"));
     }
     return strList;
 }
