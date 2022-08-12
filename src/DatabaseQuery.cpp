@@ -2,7 +2,7 @@
 
 namespace Contextual {
 
-DatabaseQuery::DatabaseQuery(ContextManager& contextManager) : m_manager(contextManager) {
+DatabaseQuery::DatabaseQuery(std::shared_ptr<ContextManager>& contextManager) : m_manager(contextManager) {
     m_willFail = WillFail::kNormal;
 }
 
@@ -22,10 +22,10 @@ DatabaseQuery::WillFail DatabaseQuery::willFail() const {
     return m_willFail;
 }
 StringTable& DatabaseQuery::getStringTable() {
-    return m_manager.getStringTable();
+    return m_manager->getStringTable();
 }
-const FunctionTable& DatabaseQuery::getFunctionTable() const {
-    return m_manager.getFunctionTable();
+const std::unique_ptr<FunctionTable>& DatabaseQuery::getFunctionTable() const {
+    return m_manager->getFunctionTable();
 }
 
 }  // namespace Contextual

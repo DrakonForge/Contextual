@@ -70,7 +70,7 @@ SpeechTokenizerResult tokenizeSymbol(int& index, std::vector<std::shared_ptr<Spe
                                      const std::string& text,
                                      const std::unordered_map<std::string, std::shared_ptr<SymbolToken>>& symbols,
                                      const std::unordered_map<std::string, std::shared_ptr<SymbolToken>>& localSymbols,
-                                     const FunctionTable& functionTable);
+                                     const std::unique_ptr<FunctionTable>& functionTable);
 
 SpeechTokenizerResult tokenizePause(int& index, std::vector<std::shared_ptr<SpeechToken>>& tokens,
                                     const std::string& text) {
@@ -206,12 +206,12 @@ SpeechTokenizerResult tokenizeFunction(
     int& index, std::vector<std::shared_ptr<SpeechToken>>& tokens, const std::string& text, std::string functionName,
     const std::unordered_map<std::string, std::shared_ptr<SymbolToken>>& symbols,
     const std::unordered_map<std::string, std::shared_ptr<SymbolToken>>& localSymbols,
-    const FunctionTable& functionTable) {
+    const std::unique_ptr<FunctionTable>& functionTable) {
     if (functionName.empty()) {
         return {SpeechTokenizerReturnCode::kInvalidSyntax, "Function name cannot be empty"};
     }
     // Check that function exists
-    const auto& sig = functionTable.getSignature(functionName);
+    const auto& sig = functionTable->getSignature(functionName);
     if (sig == nullptr) {
         return {SpeechTokenizerReturnCode::kInvalidFunction, "Function \"" + functionName + "\" does not exist"};
     }
@@ -300,7 +300,7 @@ SpeechTokenizerResult tokenizeSymbol(int& index, std::vector<std::shared_ptr<Spe
                                      const std::string& text,
                                      const std::unordered_map<std::string, std::shared_ptr<SymbolToken>>& symbols,
                                      const std::unordered_map<std::string, std::shared_ptr<SymbolToken>>& localSymbols,
-                                     const FunctionTable& functionTable) {
+                                     const std::unique_ptr<FunctionTable>& functionTable) {
     std::string symbolName;
     ++index;
     while (index < text.size()) {
@@ -502,7 +502,7 @@ SpeechTokenizerResult validate(const std::vector<std::shared_ptr<SpeechToken>>& 
 SpeechTokenizerResult tokenize(std::vector<std::shared_ptr<SpeechToken>>& tokens, const std::string& text,
                                const std::unordered_map<std::string, std::shared_ptr<SymbolToken>>& symbols,
                                const std::unordered_map<std::string, std::shared_ptr<SymbolToken>>& localSymbols,
-                               const FunctionTable& functionTable) {
+                               const std::unique_ptr<FunctionTable>& functionTable) {
     std::string nextString;
     int index = 0;
     int numStars = 0;

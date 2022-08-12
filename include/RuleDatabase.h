@@ -17,12 +17,12 @@ struct QueryBestResult {
 
 class RuleDatabase {
 public:
-    explicit RuleDatabase(ContextManager& contextManager);
+    explicit RuleDatabase(std::shared_ptr<ContextManager> contextManager);
     virtual ~RuleDatabase() = default;
     RuleDatabaseReturnCode addRuleTable(const std::string& group, const std::string& category,
                                         std::unique_ptr<RuleTable>& ruleTable);
     const std::unique_ptr<RuleTable>& getRuleTable(const std::string& group, const std::string& category) const;
-    ContextManager& getContextManager();
+    std::shared_ptr<ContextManager>& getContextManager();
 
 private:
     struct GroupCategory {
@@ -39,7 +39,7 @@ private:
             return gc1.group == gc2.group && gc1.category == gc2.category;
         }
     };
-    ContextManager& m_contextManager;
+    std::shared_ptr<ContextManager> m_contextManager;
     std::unordered_map<GroupCategory, std::unique_ptr<RuleTable>, GroupCategoryHash, GroupCategoryEquals>
         m_groupCategoryToTable;
 };

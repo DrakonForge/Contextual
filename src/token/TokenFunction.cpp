@@ -11,7 +11,7 @@ TokenFunction::TokenFunction(std::string name, std::vector<std::shared_ptr<Symbo
     : m_name(std::move(name)), m_args(std::move(args)) {}
 
 std::optional<std::string> TokenFunction::evaluate(DatabaseQuery& query) const {
-    FunctionVal val = query.getFunctionTable().call(m_name, m_args, query);
+    FunctionVal val = query.getFunctionTable()->call(m_name, m_args, query);
     if (val.error) {
         return std::nullopt;
     }

@@ -58,6 +58,7 @@ struct FunctionSig {
 
 class FunctionTable {
 public:
+    virtual ~FunctionTable() = default;
     static bool validateArgs(const std::unique_ptr<FunctionSig>& sig,
                              const std::vector<std::shared_ptr<SymbolToken>>& args);
     static bool matches(TokenType targetType, TokenType type);

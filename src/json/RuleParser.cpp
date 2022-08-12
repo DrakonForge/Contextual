@@ -476,7 +476,7 @@ JsonParseResult parseCriteria(std::vector<std::shared_ptr<Criteria>>& criteria, 
 JsonParseResult parseSpeechResponse(std::shared_ptr<Response>& response, const rapidjson::Value& value,
                                     const std::unordered_map<std::string, std::shared_ptr<SymbolToken>>& symbols,
                                     const std::unordered_map<std::string, std::shared_ptr<SymbolToken>>& localSymbols,
-                                    const FunctionTable& functionTable) {
+                                    const std::unique_ptr<FunctionTable>& functionTable) {
     if (!value.IsArray()) {
         return {JsonParseReturnCode::kInvalidType, "Speech response value must be an array"};
     }
@@ -522,7 +522,7 @@ JsonParseResult parseResponseObject(std::shared_ptr<Response>& response, const r
                                     const ParsingType parsingType,
                                     const std::unordered_map<std::string, std::shared_ptr<SymbolToken>>& symbols,
                                     const std::unordered_map<std::string, std::shared_ptr<SymbolToken>>& localSymbols,
-                                    const FunctionTable& functionTable) {
+                                    const std::unique_ptr<FunctionTable>& functionTable) {
     if (!root.IsObject()) {
         return {JsonParseReturnCode::kInvalidType, "Response must be a JSON object"};
     }
@@ -554,7 +554,7 @@ JsonParseResult parseResponse(std::shared_ptr<Response>& response, const rapidjs
                               const ParsingType parsingType,
                               const std::unordered_map<std::string, std::shared_ptr<SymbolToken>>& symbols,
                               const std::unordered_map<std::string, std::shared_ptr<SymbolToken>>& localSymbols,
-                              const FunctionTable& functionTable) {
+                              const std::unique_ptr<FunctionTable>& functionTable) {
     if (root.HasMember(g_KEY_RESPONSE)) {
         const auto& value = root[g_KEY_RESPONSE];
         if (!value.IsArray()) {
@@ -590,7 +590,7 @@ JsonParseResult parseRule(StringTable& stringTable, std::unique_ptr<RuleEntry>& 
                           std::unordered_map<std::string, RuleInfo>& namedRules, int& nextId,
                           const rapidjson::Value& root, const std::string& idPrefix, const ParsingType parsingType,
                           const std::unordered_map<std::string, std::shared_ptr<SymbolToken>>& symbols,
-                          const FunctionTable& functionTable) {
+                          const std::unique_ptr<FunctionTable>& functionTable) {
     if (!root.IsObject()) {
         return {JsonParseReturnCode::kInvalidType, "Rule must be a JSON object"};
     }

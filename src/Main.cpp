@@ -21,22 +21,22 @@ void print(std::vector<std::string> const& s) {
     std::copy(s.begin(), s.end(), std::ostream_iterator<std::string>(std::cout, " "));
 }
 
-Contextual::ContextManager createDefaultContextManager() {
-    Contextual::DefaultFunctionTable functionTable;
-    functionTable.initialize();
-    Contextual::ContextManager contextManager(functionTable);
+std::shared_ptr<Contextual::ContextManager> createDefaultContextManager() {
+    std::unique_ptr<Contextual::FunctionTable> functionTable = std::make_unique<Contextual::DefaultFunctionTable>();
+    functionTable->initialize();
+    std::shared_ptr<Contextual::ContextManager> contextManager = std::make_shared<Contextual::ContextManager>(std::move(functionTable));
     return contextManager;
 }
 
 void testContext() {
-    Contextual::ContextManager contextManager = createDefaultContextManager();
-    Contextual::StringTable& stringTable = contextManager.getStringTable();
+    std::shared_ptr<Contextual::ContextManager> contextManager = createDefaultContextManager();
+    Contextual::StringTable& stringTable = contextManager->getStringTable();
     int a = stringTable.cache("Hello world");
     int b = stringTable.cache("Hello world");
     int c = stringTable.cache("Hello!");
     std::cout << a << " " << b << " " << c << "\n";
 
-    std::shared_ptr<Contextual::ContextTable> contextTable = contextManager.createContextTable();
+    std::shared_ptr<Contextual::ContextTable> contextTable = std::make_shared<Contextual::ContextTable>(contextManager);
     contextTable->set("Health", 0.75f);
     contextTable->set("NumApples", 3);
     contextTable->set("Name", "Steve");
@@ -55,7 +55,7 @@ void testContext() {
 }
 
 void testDatabaseLoading() {
-    Contextual::ContextManager contextManager = createDefaultContextManager();
+    std::shared_ptr<Contextual::ContextManager> contextManager = createDefaultContextManager();
     std::filesystem::path path = std::filesystem::path("..") / std::filesystem::path("data");
     Contextual::RuleDatabase database(contextManager);
     Contextual::RuleParser::DatabaseStats stats = Contextual::RuleParser::loadDatabase(database, path.string());
@@ -64,7 +64,7 @@ void testDatabaseLoading() {
     std::cout << "# Tables: " << stats.numTables << "\n";
     std::cout << "# Rules: " << stats.numRules << "\n";
     std::cout << "# Criteria Objects: " << Contextual::Criterion::getCount() << "\n";
-    std::cout << "StringTable Size: " << contextManager.getStringTable().getSize() << "\n";
+    std::cout << "StringTable Size: " << contextManager->getStringTable().getSize() << "\n";
 
     std::cout << "\n";
     const std::unique_ptr<Contextual::RuleTable>& table = database.getRuleTable("Person", "Interact");
@@ -72,14 +72,14 @@ void testDatabaseLoading() {
 }
 
 void testTextParsing(const std::string& str) {
-    Contextual::ContextManager contextManager = createDefaultContextManager();
+    std::shared_ptr<Contextual::ContextManager> contextManager = createDefaultContextManager();
     std::vector<std::shared_ptr<Contextual::SpeechToken>> tokens;
     const std::unordered_map<std::string, std::shared_ptr<Contextual::SymbolToken>> symbols;
     const std::unordered_map<std::string, std::shared_ptr<Contextual::SymbolToken>> localSymbols;
 
     std::cout << "Target string: \"" << str << "\""
               << "\n";
-    auto result = Contextual::SpeechTokenizer::tokenize(tokens, str, symbols, localSymbols, contextManager.getFunctionTable());
+    auto result = Contextual::SpeechTokenizer::tokenize(tokens, str, symbols, localSymbols, contextManager->getFunctionTable());
     if (result.code == Contextual::SpeechTokenizerReturnCode::kSuccess) {
         std::cout << "Success!"
                   << "\n";
@@ -121,7 +121,7 @@ void testIntegerToWord() {
 
 int main() {
     // testTextParsingMany();
-    testIntegerToWord();
-    // testDatabaseLoading();
+    // testIntegerToWord();
+    testDatabaseLoading();
     return 0;
 }

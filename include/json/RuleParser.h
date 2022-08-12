@@ -18,6 +18,6 @@ JsonParseResult parseRule(StringTable& stringTable, std::unique_ptr<RuleEntry>& 
                           std::unordered_map<std::string, RuleInfo>& namedRules, int& nextId,
                           const rapidjson::Value& root, const std::string& idPrefix, ParsingType parsingType,
                           const std::unordered_map<std::string, std::shared_ptr<SymbolToken>>& symbols,
-                          const FunctionTable& functionTable);
+                          const std::unique_ptr<FunctionTable>& functionTable);
 
 }  // namespace Contextual::RuleParser

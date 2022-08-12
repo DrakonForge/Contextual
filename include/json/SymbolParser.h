@@ -11,7 +11,7 @@
 namespace Contextual::SymbolParser {
 
 JsonParseResult parseSymbols(std::unordered_map<std::string, std::shared_ptr<SymbolToken>>& symbols,
-                             const rapidjson::Value& root, const FunctionTable& functionTable);
+                             const rapidjson::Value& root, const std::unique_ptr<FunctionTable>& functionTable);
 std::string tokenTypeToString(TokenType type);
 
 }

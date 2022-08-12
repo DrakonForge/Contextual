@@ -1,5 +1,7 @@
 #include "RuleDatabase.h"
 
+#include <utility>
+
 namespace Contextual {
 
 namespace {
@@ -8,7 +10,7 @@ const std::unique_ptr<RuleTable> g_NOT_FOUND = nullptr;
 
 }
 
-RuleDatabase::RuleDatabase(ContextManager& contextManager) : m_contextManager(contextManager) {}
+RuleDatabase::RuleDatabase(std::shared_ptr<ContextManager> contextManager) : m_contextManager(std::move(contextManager)) {}
 
 RuleDatabaseReturnCode RuleDatabase::addRuleTable(const std::string& group, const std::string& category,
                                                   std::unique_ptr<RuleTable>& ruleTable) {
@@ -31,7 +33,7 @@ const std::unique_ptr<RuleTable>& RuleDatabase::getRuleTable(const std::string& 
     return got->second;
 }
 
-ContextManager& RuleDatabase::getContextManager() {
+std::shared_ptr<ContextManager>& RuleDatabase::getContextManager() {
     return m_contextManager;
 }
 

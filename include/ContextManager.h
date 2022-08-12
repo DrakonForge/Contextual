@@ -13,14 +13,13 @@ class FunctionTable;
 
 class ContextManager {
 public:
-    ContextManager(const FunctionTable& functionTable);
+    ContextManager(std::unique_ptr<FunctionTable> functionTable);
     virtual ~ContextManager() = default;
-    std::shared_ptr<ContextTable> createContextTable();
-    const FunctionTable& getFunctionTable() const;
+    const std::unique_ptr<FunctionTable>& getFunctionTable() const;
     StringTable& getStringTable();
 
 private:
-    const FunctionTable& m_functionTable;
+    const std::unique_ptr<FunctionTable> m_functionTable;
     StringTable m_stringTable;
 };
 

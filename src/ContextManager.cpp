@@ -2,17 +2,12 @@
 
 namespace Contextual {
 
-ContextManager::ContextManager(const FunctionTable& functionTable) : m_functionTable(functionTable) {}
-
-std::shared_ptr<ContextTable> ContextManager::createContextTable() {
-    auto contextTable = std::make_shared<ContextTable>(*this);
-    return contextTable;
-}
+ContextManager::ContextManager(std::unique_ptr<FunctionTable> functionTable) : m_functionTable(std::move(functionTable)) {}
 
 StringTable& ContextManager::getStringTable() {
     return m_stringTable;
 }
-const FunctionTable& ContextManager::getFunctionTable() const {
+const std::unique_ptr<FunctionTable>& ContextManager::getFunctionTable() const {
     return m_functionTable;
 }
 

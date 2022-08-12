@@ -6,10 +6,10 @@ namespace {
 const std::unique_ptr<std::unordered_set<int>> g_NOT_FOUND = nullptr;
 }
 
-ContextTable::ContextTable(ContextManager& manager) : m_manager(manager) {}
+ContextTable::ContextTable(std::shared_ptr<ContextManager> manager) : m_manager(std::move(manager)) {}
 
 void ContextTable::set(const std::string& key, const std::string& strValue) {
-    int symbol = m_manager.getStringTable().cache(strValue);
+    int symbol = m_manager->getStringTable().cache(strValue);
     FactTuple tuple = {FactType::kString, static_cast<float>(symbol)};
     m_basicContext.emplace(key, tuple);
 }
@@ -46,7 +46,7 @@ void ContextTable::set(const std::string& key, std::unique_ptr<std::unordered_se
 
 void ContextTable::set(const std::string& key, const std::unordered_set<const char*>& listValue) {
     auto intValues = std::make_unique<std::unordered_set<int>>();
-    StringTable& symbolTable = m_manager.getStringTable();
+    StringTable& symbolTable = m_manager->getStringTable();
     for (const char* cStr : listValue) {
         intValues->insert(symbolTable.cache(std::string(cStr)));
     }
@@ -55,7 +55,7 @@ void ContextTable::set(const std::string& key, const std::unordered_set<const ch
 
 void ContextTable::set(const std::string& key, const std::unordered_set<std::string>& listValue) {
     auto intValues = std::make_unique<std::unordered_set<int>>();
-    StringTable& symbolTable = m_manager.getStringTable();
+    StringTable& symbolTable = m_manager->getStringTable();
     for (const std::string& str : listValue) {
         intValues->insert(symbolTable.cache(str));
     }
@@ -68,7 +68,7 @@ std::optional<std::string> ContextTable::getString(const std::string& key) const
         return std::nullopt;
     }
     int value = (int)tuple->value;
-    return m_manager.getStringTable().lookup(value);
+    return m_manager->getStringTable().lookup(value);
 }
 
 std::optional<float> ContextTable::getFloat(const std::string& key) const {
@@ -131,7 +131,7 @@ std::optional<std::vector<std::string>> ContextTable::toStringList(const std::st
 
     std::vector<std::string> strList;
     strList.reserve(got->second.first->size());
-    StringTable& stringTable = m_manager.getStringTable();
+    StringTable& stringTable = m_manager->getStringTable();
     for (auto value : *got->second.first) {
         strList.push_back(stringTable.lookup(value).value_or("NULL"));
     }

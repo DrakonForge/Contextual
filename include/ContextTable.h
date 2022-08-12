@@ -15,7 +15,7 @@ enum class FactType : uint8_t { kNull, kString, kNumber, kBoolean, kList };
 class ContextManager;
 class ContextTable {
 public:
-    explicit ContextTable(ContextManager& manager);
+    explicit ContextTable(std::shared_ptr<ContextManager> manager);
     virtual ~ContextTable() = default;
 
     void set(const std::string& key, const std::string& strValue);
@@ -44,7 +44,7 @@ private:
         float value;
     };
 
-    ContextManager& m_manager;
+    std::shared_ptr<ContextManager> m_manager;
     std::unordered_map<std::string, FactTuple> m_basicContext;
     std::optional<std::unordered_map<std::string, std::pair<std::unique_ptr<std::unordered_set<int>>, bool>>> m_listContext;
     std::optional<FactTuple> getTuple(const std::string& key, FactType type) const;
