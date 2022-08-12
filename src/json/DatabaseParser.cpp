@@ -172,7 +172,7 @@ JsonParseResult parseGroup(ParsedData& parsedData, const rapidjson::Value& root,
         if (parsedParent) {
             symbols.insert(parsedParent->symbols.begin(), parsedParent->symbols.end());
         }
-        result = SymbolParser::parseSymbols(symbols, root, parsedData.database.getContextManager()->getFunctionTable());
+        result = SymbolParser::parseSymbols(symbols, root, std::nullopt, parsedData.database.getContextManager()->getFunctionTable());
         if (result.code != JsonParseReturnCode::kSuccess) {
             return result;
         }
