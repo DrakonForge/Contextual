@@ -2,7 +2,6 @@
 
 #include <algorithm>
 #include <cctype>
-#include <iostream>
 #include <memory>
 #include <optional>
 #include <sstream>
@@ -126,11 +125,10 @@ std::string helper(const int num) {
 }  // namespace
 
 SpeechGeneratorReturnCode generateLine(std::vector<std::shared_ptr<TextToken>>& speechLine, DatabaseQuery& query,
-                                   const std::vector<std::shared_ptr<SpeechToken>>& speechTokens) {
+                                       const std::vector<std::shared_ptr<SpeechToken>>& speechTokens) {
     bool hasText = false;
     std::unordered_map<std::shared_ptr<SpeechToken>, std::unordered_set<std::string>> chosenListOptions;
     for (const auto& token : speechTokens) {
-        //std::cout << token->toString();
         if (token->isSymbolToken()) {
             hasText = true;
             const auto& symbolToken = std::static_pointer_cast<SymbolToken>(token);
@@ -138,14 +136,14 @@ SpeechGeneratorReturnCode generateLine(std::vector<std::shared_ptr<TextToken>>& 
             if (nextTokenStr) {
                 // Attempt to sample without replacement for list tokens
                 // If this fails, then continue with the choice (does not fail)
-                if(symbolToken->getType() == TokenType::kList) {
+                if (symbolToken->getType() == TokenType::kList) {
                     int attempts = 0;
                     auto got = chosenListOptions.find(symbolToken);
-                    if(got == chosenListOptions.end()) {
+                    if (got == chosenListOptions.end()) {
                         got = chosenListOptions.emplace(symbolToken, std::unordered_set<std::string>()).first;
                     }
-                    while(++attempts <= g_MAX_LIST_ATTEMPTS) {
-                        if(nextTokenStr && got->second.find(*nextTokenStr) == got->second.end()) {
+                    while (++attempts <= g_MAX_LIST_ATTEMPTS) {
+                        if (nextTokenStr && got->second.find(*nextTokenStr) == got->second.end()) {
                             got->second.insert(*nextTokenStr);
                             break;
                         }
@@ -161,7 +159,6 @@ SpeechGeneratorReturnCode generateLine(std::vector<std::shared_ptr<TextToken>>& 
             speechLine.push_back(textToken);
         }
     }
-    //std::cout << "\n";
     // Must have text to print properly
     if (!hasText) {
         return SpeechGeneratorReturnCode::kFailure;

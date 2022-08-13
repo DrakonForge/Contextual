@@ -24,7 +24,8 @@ void print(std::vector<std::string> const& s) {
 std::shared_ptr<Contextual::ContextManager> createDefaultContextManager() {
     std::unique_ptr<Contextual::FunctionTable> functionTable = std::make_unique<Contextual::DefaultFunctionTable>();
     functionTable->initialize();
-    std::shared_ptr<Contextual::ContextManager> contextManager = std::make_shared<Contextual::ContextManager>(std::move(functionTable));
+    std::shared_ptr<Contextual::ContextManager> contextManager =
+        std::make_shared<Contextual::ContextManager>(std::move(functionTable));
     return contextManager;
 }
 
@@ -71,7 +72,7 @@ void testDatabaseLoading() {
     std::cout << "Nullptr: " << (table == nullptr) << "\n";
 }
 
-void testResponseQueries(int numTimes) {
+void testResponseQueries(int numTimes, bool tokenize) {
     // Load database
     std::shared_ptr<Contextual::ContextManager> contextManager = createDefaultContextManager();
     std::filesystem::path path = std::filesystem::path("..") / std::filesystem::path("data");
@@ -83,20 +84,46 @@ void testResponseQueries(int numTimes) {
     // TODO: Builder pattern for context table?
     std::shared_ptr<Contextual::ContextTable> factionTable = std::make_shared<Contextual::ContextTable>(contextManager);
     factionTable->set("IsFriendly", true);
-    std::shared_ptr<Contextual::ContextTable> listenerTable = std::make_shared<Contextual::ContextTable>(contextManager);
+    std::shared_ptr<Contextual::ContextTable> listenerTable =
+        std::make_shared<Contextual::ContextTable>(contextManager);
     listenerTable->set("Name", "jeff");
     query.addContextTable("Faction", factionTable);
     query.addContextTable("Listener", listenerTable);
 
     // Query database
-    for(int i = 0; i < numTimes; ++i) {
-        std::vector<std::shared_ptr<Contextual::TextToken>> speechLine;
-        Contextual::QueryReturnCode result = database.queryBestSpeechLine(speechLine, query);
-        if(result != Contextual::QueryReturnCode::kSuccess) {
-            std::cout << "Failed to generate line" << "\n";
+    for (int i = 0; i < numTimes; ++i) {
+        std::string output;
+        if (tokenize) {
+            std::shared_ptr<Contextual::ResponseSpeech> speechResponse = database.queryBestSpeechLineResponse(query);
+            if (speechResponse == nullptr) {
+                output += "Failed to get tokens\n";
+            } else {
+                std::vector<std::shared_ptr<Contextual::SpeechToken>> speechTokens = speechResponse->getRandomLine();
+                // Print out tokens
+                for (const auto& token : speechTokens) {
+                    output += token->toString();
+                }
+                output += "\n";
+
+                // Print out line
+                std::vector<std::shared_ptr<Contextual::TextToken>> speechLine;
+                auto returnCode = Contextual::SpeechGenerator::generateLine(speechLine, query, speechTokens);
+                if (returnCode == Contextual::SpeechGeneratorReturnCode::kSuccess) {
+                    output += "\"" + Contextual::SpeechGenerator::getRawSpeechLine(speechLine) + "\"\n";
+                } else {
+                    output += "Failed to generate line\n";
+                }
+            }
         } else {
-            std::cout << "\"" << Contextual::SpeechGenerator::getRawSpeechLine(speechLine) << "\"\n";
+            std::vector<std::shared_ptr<Contextual::TextToken>> speechLine;
+            Contextual::QueryReturnCode result = database.queryBestSpeechLine(speechLine, query);
+            if (result != Contextual::QueryReturnCode::kSuccess) {
+                output += "Failed to generate line\n";
+            } else {
+                output += "\"" + Contextual::SpeechGenerator::getRawSpeechLine(speechLine) + "\"\n";
+            }
         }
+        std::cout << output;
     }
 }
 
@@ -108,7 +135,8 @@ void testTextParsing(const std::string& str) {
 
     std::cout << "Target string: \"" << str << "\""
               << "\n";
-    auto result = Contextual::SpeechTokenizer::tokenize(tokens, str, symbols, localSymbols, contextManager->getFunctionTable());
+    auto result =
+        Contextual::SpeechTokenizer::tokenize(tokens, str, symbols, localSymbols, contextManager->getFunctionTable());
     if (result.code == Contextual::SpeechTokenizerReturnCode::kSuccess) {
         std::cout << "Success!"
                   << "\n";
@@ -152,6 +180,6 @@ int main() {
     // testTextParsingMany();
     // testIntegerToWord();
     // testDatabaseLoading();
-    testResponseQueries(5);
+    testResponseQueries(5, true);
     return 0;
 }
