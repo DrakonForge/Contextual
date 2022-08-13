@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "SymbolToken.h"
+#include "TokenList.h"
 
 namespace Contextual::SpeechGenerator {
 
@@ -33,6 +34,7 @@ const int g_VAL_HUNDRED = 100;
 const int g_VAL_THOUSAND = 1000;
 const int g_VAL_MILLION = 1000000;
 const int g_VAL_BILLION = 1000000000;
+const int g_MAX_LIST_ATTEMPTS = 5;
 
 // https://stackoverflow.com/questions/216823/how-to-trim-a-stdstring
 // trim from both ends (in place)
@@ -126,13 +128,30 @@ std::string helper(const int num) {
 SpeechGeneratorReturnCode generateLine(std::vector<std::shared_ptr<TextToken>>& speechLine, DatabaseQuery& query,
                                    const std::vector<std::shared_ptr<SpeechToken>>& speechTokens) {
     bool hasText = false;
+    std::unordered_map<std::shared_ptr<SpeechToken>, std::unordered_set<std::string>> chosenListOptions;
     for (const auto& token : speechTokens) {
-        std::cout << token->toString();
+        //std::cout << token->toString();
         if (token->isSymbolToken()) {
             hasText = true;
             const auto& symbolToken = std::static_pointer_cast<SymbolToken>(token);
             std::optional<std::string> nextTokenStr = symbolToken->evaluate(query);
             if (nextTokenStr) {
+                // Attempt to sample without replacement for list tokens
+                // If this fails, then continue with the choice (does not fail)
+                if(symbolToken->getType() == TokenType::kList) {
+                    int attempts = 0;
+                    auto got = chosenListOptions.find(symbolToken);
+                    if(got == chosenListOptions.end()) {
+                        got = chosenListOptions.emplace(symbolToken, std::unordered_set<std::string>()).first;
+                    }
+                    while(++attempts <= g_MAX_LIST_ATTEMPTS) {
+                        if(nextTokenStr && got->second.find(*nextTokenStr) == got->second.end()) {
+                            got->second.insert(*nextTokenStr);
+                            break;
+                        }
+                        nextTokenStr = symbolToken->evaluate(query);
+                    }
+                }
                 speechLine.push_back(std::make_shared<TextLiteral>(std::move(*nextTokenStr)));
             } else {
                 return SpeechGeneratorReturnCode::kFailure;
@@ -142,7 +161,7 @@ SpeechGeneratorReturnCode generateLine(std::vector<std::shared_ptr<TextToken>>& 
             speechLine.push_back(textToken);
         }
     }
-    std::cout << "\n";
+    //std::cout << "\n";
     // Must have text to print properly
     if (!hasText) {
         return SpeechGeneratorReturnCode::kFailure;
