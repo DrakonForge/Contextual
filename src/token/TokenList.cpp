@@ -1,4 +1,4 @@
-#include "token/TokenList.h"
+#include "TokenList.h"
 
 #include <random>
 
@@ -27,6 +27,7 @@ std::string TokenList::toString() const {
 TokenType TokenList::getType() const {
     return TokenType::kList;
 }
+
 const std::vector<std::shared_ptr<SymbolToken>>& TokenList::getValue() const {
     return m_tokens;
 }

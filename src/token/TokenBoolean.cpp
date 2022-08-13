@@ -1,4 +1,4 @@
-#include "token/TokenBoolean.h"
+#include "TokenBoolean.h"
 
 namespace Contextual {
 
@@ -20,6 +20,7 @@ std::string TokenBoolean::toString() const {
 TokenType TokenBoolean::getType() const {
     return TokenType::kBool;
 }
+
 bool TokenBoolean::getValue() const {
     return m_value;
 }

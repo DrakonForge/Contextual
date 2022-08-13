@@ -1,4 +1,4 @@
-#include "token/TokenFloat.h"
+#include "TokenFloat.h"
 
 #include "SpeechGenerator.h"
 
@@ -18,6 +18,7 @@ std::string TokenFloat::toString() const {
 TokenType TokenFloat::getType() const {
     return TokenType::kFloat;
 }
+
 float TokenFloat::getValue() const {
     return m_value;
 }

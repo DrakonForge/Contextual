@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cctype>
+#include <iostream>
 #include <memory>
 #include <optional>
 #include <sstream>
@@ -126,6 +127,7 @@ SpeechGeneratorReturnCode generateLine(std::vector<std::shared_ptr<TextToken>>& 
                                    const std::vector<std::shared_ptr<SpeechToken>>& speechTokens) {
     bool hasText = false;
     for (const auto& token : speechTokens) {
+        std::cout << token->toString();
         if (token->isSymbolToken()) {
             hasText = true;
             const auto& symbolToken = std::static_pointer_cast<SymbolToken>(token);
@@ -140,6 +142,7 @@ SpeechGeneratorReturnCode generateLine(std::vector<std::shared_ptr<TextToken>>& 
             speechLine.push_back(textToken);
         }
     }
+    std::cout << "\n";
     // Must have text to print properly
     if (!hasText) {
         return SpeechGeneratorReturnCode::kFailure;

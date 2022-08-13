@@ -1,5 +1,6 @@
 #include "FunctionTable.h"
 
+#include "SymbolParser.h"
 #include "TokenBoolean.h"
 #include "TokenContext.h"
 #include "TokenFloat.h"
@@ -37,7 +38,8 @@ bool FunctionTable::matches(TokenType targetType, TokenType type) {
     return targetType == type;
 }
 
-bool FunctionTable::validateArgs(const std::unique_ptr<FunctionSig>& sig, const std::vector<std::shared_ptr<SymbolToken>>& args) {
+bool FunctionTable::validateArgs(const std::unique_ptr<FunctionSig>& sig,
+                                 const std::vector<std::shared_ptr<SymbolToken>>& args) {
     if (sig->argTypes.empty()) {
         // Function should not have any args
         return args.empty();
@@ -79,7 +81,7 @@ FunctionVal FunctionTable::call(const std::string& name, const std::vector<std::
     const std::unique_ptr<FunctionSig>& sig = got->second;
 
     // Check arguments
-    if(!validateArgs(sig, args)) {
+    if (!validateArgs(sig, args)) {
         return FunctionVal();
     }
 
@@ -105,7 +107,7 @@ std::optional<std::string> FunctionTable::argToString(const std::shared_ptr<Symb
 }
 
 std::optional<std::pair<std::vector<int>, bool>> FunctionTable::argToList(const std::shared_ptr<SymbolToken>& token,
-                                                                DatabaseQuery& query) const {
+                                                                          DatabaseQuery& query) const {
     if (token->getType() == TokenType::kContext) {
         const auto& contextToken = std::static_pointer_cast<TokenContext>(token);
         const std::shared_ptr<ContextTable>& contextTable = query.getContextTable(contextToken->getTable());
@@ -118,7 +120,7 @@ std::optional<std::pair<std::vector<int>, bool>> FunctionTable::argToList(const 
         }
         std::vector<int> vec;
         vec.reserve(ptr->size());
-        for(const auto& item : *ptr) {
+        for (const auto& item : *ptr) {
             vec.push_back(item);
         }
         bool isStringList = contextTable->isStringList(contextToken->getKey());
@@ -142,7 +144,7 @@ std::optional<std::pair<std::vector<int>, bool>> FunctionTable::argToList(const 
             std::optional<int> num = argToListItem(isString, item, query);
             if (num) {
                 result.push_back(*num);
-                if(!isString) {
+                if (!isString) {
                     allStrings = false;
                 }
             } else {
@@ -154,7 +156,8 @@ std::optional<std::pair<std::vector<int>, bool>> FunctionTable::argToList(const 
     return std::nullopt;
 }
 
-std::optional<int> FunctionTable::argToListItem(bool& isString, const std::shared_ptr<SymbolToken>& token, DatabaseQuery& query) const {
+std::optional<int> FunctionTable::argToListItem(bool& isString, const std::shared_ptr<SymbolToken>& token,
+                                                DatabaseQuery& query) const {
     if (token->getType() == TokenType::kContext) {
         const auto& contextToken = std::static_pointer_cast<TokenContext>(token);
         const std::shared_ptr<ContextTable>& contextTable = query.getContextTable(contextToken->getTable());

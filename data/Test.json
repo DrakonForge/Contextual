@@ -98,9 +98,7 @@
             {
               "Type": "Random",
               "Value": [
-                "Response A",
-                "Response B",
-                "Response C"
+                "@subject"
               ]
             }
           ]

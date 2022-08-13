@@ -1,5 +1,6 @@
-#include "token/TokenContext.h"
+#include "TokenContext.h"
 
+#include <iostream>
 #include <random>
 #include <utility>
 
@@ -19,16 +20,14 @@ std::optional<std::string> TokenContext::evaluate(DatabaseQuery& query) const {
             if (value) {
                 return value;
             }
-        }
-        if (type == FactType::kNumber) {
+        } else if (type == FactType::kNumber) {
             const std::optional<int>& value = contextTable->getInt(m_key);
             if (value) {
                 return SpeechGenerator::integerToWord(*value);
             }
-        }
-        if(type == FactType::kList) {
+        } else if (type == FactType::kList) {
             std::optional<std::vector<std::string>> options = contextTable->toStringList(m_key);
-            if(options) {
+            if (options) {
                 static std::default_random_engine e;
                 std::uniform_int_distribution<size_t> dis(0, options->size() - 1);
                 size_t index = dis(e);
@@ -46,9 +45,11 @@ std::string TokenContext::toString() const {
 TokenType TokenContext::getType() const {
     return TokenType::kContext;
 }
+
 const std::string& TokenContext::getTable() const {
     return m_table;
 }
+
 const std::string& TokenContext::getKey() const {
     return m_key;
 }

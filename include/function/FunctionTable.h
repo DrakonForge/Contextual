@@ -26,23 +26,28 @@ struct FunctionVal {
 
     explicit FunctionVal()
         : error(true), type(TokenType::kContext), boolVal(false), intVal(0), floatVal(0), isStringList(false) {}
+
     explicit FunctionVal(bool boolVal)
         : error(false), type(TokenType::kBool), boolVal(boolVal), intVal(0), floatVal(0), isStringList(false) {}
+
     explicit FunctionVal(int intVal)
-        : error(false), type(TokenType::kBool), boolVal(false), intVal(intVal), floatVal(0), isStringList(false) {}
+        : error(false), type(TokenType::kInt), boolVal(false), intVal(intVal), floatVal(0), isStringList(false) {}
+
     explicit FunctionVal(float floatVal)
-        : error(false), type(TokenType::kBool), boolVal(false), intVal(0), floatVal(floatVal), isStringList(false) {}
+        : error(false), type(TokenType::kFloat), boolVal(false), intVal(0), floatVal(floatVal), isStringList(false) {}
+
     explicit FunctionVal(std::string stringVal)
         : error(false),
-          type(TokenType::kBool),
+          type(TokenType::kString),
           boolVal(false),
           intVal(0),
           floatVal(0),
           stringVal(std::move(stringVal)),
           isStringList(false) {}
+
     explicit FunctionVal(std::vector<int> listVal, bool isStringList)
         : error(false),
-          type(TokenType::kBool),
+          type(TokenType::kList),
           boolVal(false),
           intVal(0),
           floatVal(0),
@@ -72,8 +77,10 @@ protected:
     virtual FunctionVal doCall(const std::string& name, const std::vector<std::shared_ptr<SymbolToken>>& args,
                                DatabaseQuery& query) const = 0;
     std::optional<std::string> argToString(const std::shared_ptr<SymbolToken>& token, DatabaseQuery& query) const;
-    std::optional<std::pair<std::vector<int>, bool>> argToList(const std::shared_ptr<SymbolToken>& token, DatabaseQuery& query) const;
-    std::optional<int> argToListItem(bool& isString, const std::shared_ptr<SymbolToken>& token, DatabaseQuery& query) const;
+    std::optional<std::pair<std::vector<int>, bool>> argToList(const std::shared_ptr<SymbolToken>& token,
+                                                               DatabaseQuery& query) const;
+    std::optional<int> argToListItem(bool& isString, const std::shared_ptr<SymbolToken>& token,
+                                     DatabaseQuery& query) const;
     std::optional<int> argToInt(const std::shared_ptr<SymbolToken>& token, DatabaseQuery& query) const;
     std::optional<float> argToFloat(const std::shared_ptr<SymbolToken>& token, DatabaseQuery& query) const;
     std::optional<bool> argToBool(const std::shared_ptr<SymbolToken>& token, DatabaseQuery& query) const;

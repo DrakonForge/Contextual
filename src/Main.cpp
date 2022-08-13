@@ -80,9 +80,13 @@ void testResponseQueries(int numTimes) {
 
     // Create query
     Contextual::DatabaseQuery query(contextManager, "Person", "Interact");
-    std::shared_ptr<Contextual::ContextTable> contextTable = std::make_shared<Contextual::ContextTable>(contextManager);
-    contextTable->set("IsFriendly", true);
-    query.addContextTable("Faction", contextTable);
+    // TODO: Builder pattern for context table?
+    std::shared_ptr<Contextual::ContextTable> factionTable = std::make_shared<Contextual::ContextTable>(contextManager);
+    factionTable->set("IsFriendly", true);
+    std::shared_ptr<Contextual::ContextTable> listenerTable = std::make_shared<Contextual::ContextTable>(contextManager);
+    listenerTable->set("Name", "jeff");
+    query.addContextTable("Faction", factionTable);
+    query.addContextTable("Listener", listenerTable);
 
     // Query database
     for(int i = 0; i < numTimes; ++i) {
