@@ -1,6 +1,6 @@
 #include "RuleParser.h"
 
-#include <iostream>
+#include <limits>
 
 #include "CriterionAlternate.h"
 #include "CriterionDynamic.h"
@@ -11,6 +11,7 @@
 #include "CriterionStatic.h"
 #include "response/ResponseMultiple.h"
 #include "response/ResponseSimple.h"
+#include "ResponseEvent.h"
 #include "ResponseSpeech.h"
 #include "SpeechTokenizer.h"
 #include "SymbolParser.h"
@@ -29,8 +30,11 @@ const std::string g_KEY_CRITERION_TYPE = "Type";
 const std::string g_KEY_CRITERION_VALUE = "Value";
 const std::string g_KEY_RESPONSE_TYPE = "Type";
 const std::string g_KEY_RESPONSE_VALUE = "Value";
+const std::string g_KEY_RESPONSE_EVENT_NAME = "Name";
+const std::string g_KEY_RESPONSE_EVENT_ARGS = "Args";
 
 const std::string g_RESPONSE_RANDOM = "Random";
+const std::string g_RESPONSE_EVENT = "Event";
 
 const std::string g_TYPE_EQUALS = "Eq";
 const std::string g_TYPE_LESS_THAN = "Lt";
@@ -491,8 +495,9 @@ JsonParseResult parseSpeechResponse(std::shared_ptr<Response>& response, const r
         std::vector<std::shared_ptr<SpeechToken>> speechLine;
         const std::string& lineStr = line.GetString();
         auto result = SpeechTokenizer::tokenize(speechLine, lineStr, symbols, localSymbols, functionTable);
-        if(result.code != SpeechTokenizerReturnCode::kSuccess) {
-            return {JsonParseReturnCode::kInvalidValue, "Failed to parse speech line \"" + lineStr + "\": " + result.errorMsg};
+        if (result.code != SpeechTokenizerReturnCode::kSuccess) {
+            return {JsonParseReturnCode::kInvalidValue,
+                    "Failed to parse speech line \"" + lineStr + "\": " + result.errorMsg};
         }
         speechLines.push_back(speechLine);
     }
@@ -515,6 +520,39 @@ JsonParseResult parseSimpleResponse(std::shared_ptr<Response>& response, const r
         options.emplace_back(option.GetString());
     }
     response = std::make_shared<ResponseSimple>(std::move(options));
+    return JsonUtils::g_RESULT_SUCCESS;
+}
+
+JsonParseResult parseEventResponse(std::shared_ptr<Response>& response, const rapidjson::Value& value) {
+    if (!value.IsObject()) {
+        return {JsonParseReturnCode::kInvalidType, "Event response value must be an object"};
+    }
+
+    if (!value.HasMember(g_KEY_RESPONSE_EVENT_NAME)) {
+        return {JsonParseReturnCode::kMissingKey,
+                "Event response value must specify key \"" + g_KEY_RESPONSE_EVENT_NAME + "\""};
+    }
+    if (!value.HasMember(g_KEY_RESPONSE_EVENT_ARGS)) {
+        return {JsonParseReturnCode::kMissingKey,
+                "Event response value must specify key \"" + g_KEY_RESPONSE_EVENT_ARGS + "\""};
+    }
+    std::string name;
+    auto result = JsonUtils::getString(name, value, g_KEY_RESPONSE_EVENT_NAME);
+
+    const auto& argValue = value[g_KEY_RESPONSE_EVENT_ARGS];
+    if (!argValue.IsArray()) {
+        return {JsonParseReturnCode::kInvalidType, "Event response arguments must be an array"};
+    }
+
+    std::vector<std::string> args;
+    for (auto iter = argValue.Begin(); iter != argValue.End(); ++iter) {
+        const auto& arg = *iter;
+        if (!arg.IsString()) {
+            return {JsonParseReturnCode::kInvalidType, "All values in event response arguments must be a string"};
+        }
+        args.emplace_back(arg.GetString());
+    }
+    response = std::make_shared<ResponseEvent>(std::move(name), std::move(args));
     return JsonUtils::g_RESULT_SUCCESS;
 }
 
@@ -544,6 +582,9 @@ JsonParseResult parseResponseObject(std::shared_ptr<Response>& response, const r
             return parseSpeechResponse(response, value, symbols, localSymbols, functionTable);
         }
         return parseSimpleResponse(response, value);
+    }
+    if (type == g_RESPONSE_EVENT) {
+        return parseEventResponse(response, value);
     }
 
     // TODO: For any non-random response, check parsing type

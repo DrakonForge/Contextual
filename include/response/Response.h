@@ -5,7 +5,8 @@ namespace Contextual {
 enum class ResponseType {
     kMultiple,
     kSimple,
-    kSpeech
+    kSpeech,
+    kEvent
 };
 class Response {
 public:

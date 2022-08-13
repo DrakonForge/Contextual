@@ -12,6 +12,7 @@ bool readFile(const std::string& path, rapidjson::Document& out) {
     return true;
 }
 
+// Assumes key is a member of object
 JsonParseResult getString(std::string& str, const rapidjson::Value& obj, const std::string& key) {
     const auto& value = obj[key];
     if (value.IsString()) {
