@@ -71,6 +71,31 @@ void testDatabaseLoading() {
     std::cout << "Nullptr: " << (table == nullptr) << "\n";
 }
 
+void testResponseQueries(int numTimes) {
+    // Load database
+    std::shared_ptr<Contextual::ContextManager> contextManager = createDefaultContextManager();
+    std::filesystem::path path = std::filesystem::path("..") / std::filesystem::path("data");
+    Contextual::RuleDatabase database(contextManager);
+    Contextual::RuleParser::DatabaseStats stats = Contextual::RuleParser::loadDatabase(database, path.string());
+
+    // Create query
+    Contextual::DatabaseQuery query(contextManager, "Person", "Interact");
+    std::shared_ptr<Contextual::ContextTable> contextTable = std::make_shared<Contextual::ContextTable>(contextManager);
+    contextTable->set("IsFriendly", true);
+    query.addContextTable("Faction", contextTable);
+
+    // Query database
+    for(int i = 0; i < numTimes; ++i) {
+        std::vector<std::shared_ptr<Contextual::TextToken>> speechLine;
+        Contextual::QueryReturnCode result = database.queryBestSpeechLine(speechLine, query);
+        if(result != Contextual::QueryReturnCode::kSuccess) {
+            std::cout << "Failed to generate line" << "\n";
+        } else {
+            std::cout << "\"" << Contextual::SpeechGenerator::getRawSpeechLine(speechLine) << "\"\n";
+        }
+    }
+}
+
 void testTextParsing(const std::string& str) {
     std::shared_ptr<Contextual::ContextManager> contextManager = createDefaultContextManager();
     std::vector<std::shared_ptr<Contextual::SpeechToken>> tokens;
@@ -122,6 +147,7 @@ void testIntegerToWord() {
 int main() {
     // testTextParsingMany();
     // testIntegerToWord();
-    testDatabaseLoading();
+    // testDatabaseLoading();
+    testResponseQueries(5);
     return 0;
 }

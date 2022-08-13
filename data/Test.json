@@ -1,5 +1,6 @@
 {
   "Name": "Person",
+  "Type": "Speech",
   "Symbols": [
     {
       "Name": "name",
@@ -66,7 +67,7 @@
             },
             {
               "Type": "Fail",
-              "Value": 0.5
+              "Value": 0
             }
           ],
           "Symbols": [

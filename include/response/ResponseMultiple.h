@@ -11,6 +11,7 @@ class ResponseMultiple : public Response {
 public:
     explicit ResponseMultiple(std::vector<std::shared_ptr<Response>> responses);
     [[nodiscard]] std::vector<std::shared_ptr<Response>> getResponses() const;
+    [[nodiscard]] ResponseType getType() const override;
 
 private:
     const std::vector<std::shared_ptr<Response>> m_responses;

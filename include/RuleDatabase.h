@@ -5,14 +5,15 @@
 #include <unordered_map>
 
 #include "RuleTable.h"
+#include "TextToken.h"
 
 namespace Contextual {
 
 enum class RuleDatabaseReturnCode : uint32_t { kSuccess = 0, kAlreadyDefined = 10 };
 
-struct QueryBestResult {
-    std::shared_ptr<Response> response;
-    int priority;
+enum class QueryReturnCode {
+    kSuccess,
+    kFailure
 };
 
 class RuleDatabase {
@@ -21,6 +22,7 @@ public:
     virtual ~RuleDatabase() = default;
     RuleDatabaseReturnCode addRuleTable(const std::string& group, const std::string& category,
                                         std::unique_ptr<RuleTable>& ruleTable);
+    QueryReturnCode queryBestSpeechLine(std::vector<std::shared_ptr<TextToken>>& speechLine, DatabaseQuery& query) const;
     const std::unique_ptr<RuleTable>& getRuleTable(const std::string& group, const std::string& category) const;
     std::shared_ptr<ContextManager>& getContextManager();
 

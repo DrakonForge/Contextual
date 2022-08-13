@@ -27,14 +27,39 @@ struct RuleEntry {
     int priority;
 };
 
+struct BestMatch {
+    std::shared_ptr<Response> response;
+    int priority;
+};
+
+struct UniformMatch {
+    std::vector<std::shared_ptr<Response>> options;
+};
+
+struct WeightedMatch {
+    std::vector<std::pair<std::shared_ptr<Response>, int>> optionsAndWeights;
+};
+
+struct SimpleUniformMatch {
+    std::vector<std::string> options;
+};
+
+struct SimpleWeightedMatch {
+    std::vector<std::pair<std::string, int>> optionsAndWeights;
+};
+
 class RuleTable {
 public:
     RuleTable() = default;
     virtual ~RuleTable() = default;
     void addEntry(std::unique_ptr<RuleEntry>& ruleEntry);
     bool sortEntries();
-    const std::unique_ptr<RuleEntry>& query(DatabaseQuery query);
-    size_t getNumEntries();
+    BestMatch queryBest(const DatabaseQuery& query) const;
+    UniformMatch queryUniform(const DatabaseQuery& query) const;
+    WeightedMatch queryWeighted(const DatabaseQuery& query) const;
+    SimpleUniformMatch querySimpleUniform(const DatabaseQuery& query, const std::unordered_set<std::string>& skip, bool unique) const;
+    SimpleWeightedMatch querySimpleWeighted(const DatabaseQuery& query, const std::unordered_set<std::string>& skip, bool unique) const;
+    [[nodiscard]] size_t getNumEntries() const;
 
 private:
     std::vector<std::unique_ptr<RuleEntry>> m_entries;

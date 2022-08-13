@@ -18,9 +18,13 @@ const std::vector<std::shared_ptr<SpeechToken>>& ResponseSpeech::getRandomLine()
 
     // Select random speech line
     static std::default_random_engine e;
-    std::uniform_int_distribution<size_t> dis(0, m_speechLines.size());
+    std::uniform_int_distribution<size_t> dis(0, m_speechLines.size() - 1);
     size_t index = dis(e);
     return m_speechLines[index];
+}
+
+ResponseType ResponseSpeech::getType() const {
+    return ResponseType::kSpeech;
 }
 
 }  // namespace Contextual

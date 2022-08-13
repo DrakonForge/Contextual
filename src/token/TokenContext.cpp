@@ -30,7 +30,7 @@ std::optional<std::string> TokenContext::evaluate(DatabaseQuery& query) const {
             std::optional<std::vector<std::string>> options = contextTable->toStringList(m_key);
             if(options) {
                 static std::default_random_engine e;
-                std::uniform_int_distribution<size_t> dis(0, options->size());
+                std::uniform_int_distribution<size_t> dis(0, options->size() - 1);
                 size_t index = dis(e);
                 return (*options)[index];
             }

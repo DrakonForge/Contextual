@@ -4,7 +4,7 @@
 
 namespace Contextual {
 
-CriterionFail::CriterionFail(const float chance) : m_chance(chance) {}
+CriterionFail::CriterionFail(const float chanceToFail) : m_chanceToFail(chanceToFail) {}
 
 int CriterionFail::getPriority() const {
     return 5;
@@ -18,7 +18,7 @@ bool CriterionFail::evaluate(const std::string& table, const std::string& key, c
 
     DatabaseQuery::WillFail failType = query.willFail();
     if (failType == DatabaseQuery::WillFail::kNormal) {
-        return dis(e) < m_chance;
+        return dis(e) >= m_chanceToFail;
     }
     if (failType == DatabaseQuery::WillFail::kNever) {
         return true;

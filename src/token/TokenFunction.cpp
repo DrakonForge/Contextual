@@ -17,7 +17,7 @@ std::optional<std::string> TokenFunction::evaluate(DatabaseQuery& query) const {
     }
     if (val.type == TokenType::kList && val.isStringList) {
         static std::default_random_engine e;
-        std::uniform_int_distribution<size_t> dis(0, val.listVal.size());
+        std::uniform_int_distribution<size_t> dis(0, val.listVal.size() - 1);
         size_t index = dis(e);
         return query.getStringTable().lookup(val.listVal[index]).value_or("NULL");
     }

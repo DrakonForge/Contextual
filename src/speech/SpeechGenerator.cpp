@@ -122,7 +122,7 @@ std::string helper(const int num) {
 
 }  // namespace
 
-SpeechGeneratorResult generateLine(std::vector<std::shared_ptr<TextToken>>& speechLine, DatabaseQuery& query,
+SpeechGeneratorReturnCode generateLine(std::vector<std::shared_ptr<TextToken>>& speechLine, DatabaseQuery& query,
                                    const std::vector<std::shared_ptr<SpeechToken>>& speechTokens) {
     bool hasText = false;
     for (const auto& token : speechTokens) {
@@ -133,7 +133,7 @@ SpeechGeneratorResult generateLine(std::vector<std::shared_ptr<TextToken>>& spee
             if (nextTokenStr) {
                 speechLine.push_back(std::make_shared<TextLiteral>(std::move(*nextTokenStr)));
             } else {
-                return SpeechGeneratorResult::kFailure;
+                return SpeechGeneratorReturnCode::kFailure;
             }
         } else {
             const auto& textToken = std::static_pointer_cast<TextToken>(token);
@@ -142,15 +142,15 @@ SpeechGeneratorResult generateLine(std::vector<std::shared_ptr<TextToken>>& spee
     }
     // Must have text to print properly
     if (!hasText) {
-        return SpeechGeneratorResult::kFailure;
+        return SpeechGeneratorReturnCode::kFailure;
     }
-    return SpeechGeneratorResult::kSuccess;
+    return SpeechGeneratorReturnCode::kSuccess;
 }
 
 std::string getRawSpeechLine(const std::vector<std::shared_ptr<TextToken>>& speechLine) {
     std::string result;
     for (const auto& textToken : speechLine) {
-        if (textToken->isLiteral) {
+        if (textToken->isLiteral()) {
             const auto& textLiteral = std::static_pointer_cast<TextLiteral>(textToken);
             result += textLiteral->value;
         }

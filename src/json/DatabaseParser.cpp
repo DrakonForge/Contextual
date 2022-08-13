@@ -29,7 +29,7 @@ const std::string g_KEY_CATEGORY_RULES = "Rules";
 
 const std::string g_TYPE_DEFAULT = "Default";
 const std::string g_TYPE_SIMPLE = "Simple";
-const std::string g_TYPE_SPEECHBANK = "Speechbank";
+const std::string g_TYPE_SPEECHBANK = "Speech";
 
 const std::string g_EXT_JSON = ".json";
 

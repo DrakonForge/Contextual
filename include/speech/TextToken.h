@@ -7,18 +7,17 @@
 namespace Contextual {
 
 struct TextToken : public SpeechToken {
-    bool isLiteral;
-
+    virtual bool isLiteral() { return false; };
 protected:
-    TextToken() : isLiteral(false){};
-    explicit TextToken(bool isLiteral) : isLiteral(isLiteral){};
+    TextToken() = default;
 };
 
 // Explicit constructors so that they can be used when making shared pointers
 
 struct TextLiteral : TextToken {
     std::string value;
-    explicit TextLiteral(std::string value) : TextToken(false), value(std::move(value)) {}
+    explicit TextLiteral(std::string value) : value(std::move(value)) {}
+    bool isLiteral() override { return true; }
     [[nodiscard]] std::string toString() const override {
         return "\"" + value + "\"";
     }

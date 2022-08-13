@@ -9,6 +9,8 @@ AccessModifierOffset: -4
 FixNamespaceComments: true
 SpaceBeforeParens: ControlStatements
 AllowShortFunctionsOnASingleLine: Empty
+MaxEmptyLinesToKeep: 1
+SeparateDefinitionBlocks: Always
 
 # Some folks prefer to write "int& foo" while others prefer "int &foo".  The
 # Google Style Guide only asks for consistency within a project, we chose
