@@ -4,6 +4,9 @@
 #include <limits>
 #include <random>
 
+#include "ResponseMultiple.h"
+#include "ResponseSimple.h"
+
 namespace Contextual {
 
 namespace {
@@ -43,8 +46,8 @@ BestMatch RuleTable::queryBest(const DatabaseQuery& query) const {
         if (entry->priority < highestMatchingPriority) {
             break;
         }
-        if(match(query, entry->criteria)) {
-            if(entry->priority > highestMatchingPriority) {
+        if (match(query, entry->criteria)) {
+            if (entry->priority > highestMatchingPriority) {
                 highestMatchingPriority = entry->priority;
                 candidates.clear();
             }
@@ -53,10 +56,10 @@ BestMatch RuleTable::queryBest(const DatabaseQuery& query) const {
     }
 
     // Return random candidate
-    if(candidates.empty()) {
+    if (candidates.empty()) {
         return {};
     }
-    if(candidates.size() == 1) {
+    if (candidates.size() == 1) {
         return {candidates[0], highestMatchingPriority};
     }
     // TODO Improve RNG generation
@@ -67,21 +70,101 @@ BestMatch RuleTable::queryBest(const DatabaseQuery& query) const {
 }
 
 UniformMatch RuleTable::queryUniform(const DatabaseQuery& query) const {
-    return {};
+    std::vector<std::shared_ptr<Response>> options;
+    for (const auto& entry : m_entries) {
+        if (match(query, entry->criteria)) {
+            options.push_back(entry->response);
+        }
+    }
+    return {options};
 }
 
 WeightedMatch RuleTable::queryWeighted(const DatabaseQuery& query) const {
-    return {};
+    std::vector<std::pair<std::shared_ptr<Response>, int>> weightedOptions;
+    for (const auto& entry : m_entries) {
+        if (match(query, entry->criteria)) {
+            weightedOptions.emplace_back(std::make_pair(entry->response, entry->priority));
+        }
+    }
+    return {weightedOptions};
 }
 
 SimpleUniformMatch RuleTable::querySimpleUniform(const DatabaseQuery& query,
                                                  const std::unordered_set<std::string>& skip, bool unique) const {
-    return {};
+    std::vector<std::string> options;
+    std::unordered_set<std::string> encountered;
+    for (const auto& entry : m_entries) {
+        if (match(query, entry->criteria)) {
+            ResponseType type = entry->response->getType();
+            std::shared_ptr<ResponseSimple> simpleResponse;
+            if (type == ResponseType::kSimple) {
+                simpleResponse = std::static_pointer_cast<ResponseSimple>(entry->response);
+            } else if (type == ResponseType::kMultiple) {
+                // Look one nested layer for simple
+                const auto& multipleResponse = std::static_pointer_cast<ResponseMultiple>(entry->response);
+                for (const auto& response : multipleResponse->getResponses()) {
+                    if (response->getType() == ResponseType::kSimple) {
+                        simpleResponse = std::static_pointer_cast<ResponseSimple>(response);
+                        break;
+                    }
+                }
+            }
+            if (simpleResponse == nullptr) {
+                continue;
+            }
+
+            // Add all
+            for (const auto& option : simpleResponse->getOptions()) {
+                if (skip.find(option) != skip.end() || (unique && encountered.find(option) != encountered.end())) {
+                    continue;
+                }
+                if (unique) {
+                    encountered.insert(option);
+                }
+                options.push_back(option);
+            }
+        }
+    }
+    return {options};
 }
 
 SimpleWeightedMatch RuleTable::querySimpleWeighted(const DatabaseQuery& query,
                                                    const std::unordered_set<std::string>& skip, bool unique) const {
-    return {};
+    std::vector<std::pair<std::string, int>> weightedOptions;
+    std::unordered_set<std::string> encountered;
+    for (const auto& entry : m_entries) {
+        if (match(query, entry->criteria)) {
+            ResponseType type = entry->response->getType();
+            std::shared_ptr<ResponseSimple> simpleResponse;
+            if (type == ResponseType::kSimple) {
+                simpleResponse = std::static_pointer_cast<ResponseSimple>(entry->response);
+            } else if (type == ResponseType::kMultiple) {
+                // Look one nested layer for simple
+                const auto& multipleResponse = std::static_pointer_cast<ResponseMultiple>(entry->response);
+                for (const auto& response : multipleResponse->getResponses()) {
+                    if (response->getType() == ResponseType::kSimple) {
+                        simpleResponse = std::static_pointer_cast<ResponseSimple>(response);
+                        break;
+                    }
+                }
+            }
+            if (simpleResponse == nullptr) {
+                continue;
+            }
+
+            // Add all
+            for (const auto& option : simpleResponse->getOptions()) {
+                if (skip.find(option) != skip.end() || (unique && encountered.find(option) != encountered.end())) {
+                    continue;
+                }
+                if (unique) {
+                    encountered.insert(option);
+                }
+                weightedOptions.emplace_back(std::make_pair(option, entry->priority));
+            }
+        }
+    }
+    return {weightedOptions};
 }
 
 size_t RuleTable::getNumEntries() const {

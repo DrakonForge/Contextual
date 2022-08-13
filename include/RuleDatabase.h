@@ -23,6 +23,11 @@ public:
     RuleDatabaseReturnCode addRuleTable(const std::string& group, const std::string& category,
                                         std::unique_ptr<RuleTable>& ruleTable);
     QueryReturnCode queryBestSpeechLine(std::vector<std::shared_ptr<TextToken>>& speechLine, DatabaseQuery& query) const;
+    QueryReturnCode queryBestMatch(BestMatch& bestMatch, DatabaseQuery& query) const;
+    QueryReturnCode queryUniformMatch(UniformMatch& uniformMatch, DatabaseQuery& query) const;
+    QueryReturnCode queryWeightedMatch(WeightedMatch& weightedMatch, DatabaseQuery& query) const;
+    QueryReturnCode querySimpleUniformMatch(SimpleUniformMatch& simpleUniformMatch, DatabaseQuery& query, const std::unordered_set<std::string>& skip, bool unique) const;
+    QueryReturnCode querySimpledWeightedMatch(SimpleWeightedMatch& simpleWeightedMatch, DatabaseQuery& query, const std::unordered_set<std::string>& skip, bool unique) const;
     const std::unique_ptr<RuleTable>& getRuleTable(const std::string& group, const std::string& category) const;
     std::shared_ptr<ContextManager>& getContextManager();
 
