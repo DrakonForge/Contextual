@@ -1,16 +1,15 @@
 #include "SymbolParser.h"
 
-#include <iostream>
 #include <vector>
 
 #include "JsonUtils.h"
-#include "token/TokenBoolean.h"
-#include "token/TokenContext.h"
-#include "token/TokenFloat.h"
-#include "token/TokenFunction.h"
-#include "token/TokenInt.h"
-#include "token/TokenList.h"
-#include "token/TokenString.h"
+#include "TokenBoolean.h"
+#include "TokenContext.h"
+#include "TokenFloat.h"
+#include "TokenFunction.h"
+#include "TokenInt.h"
+#include "TokenList.h"
+#include "TokenString.h"
 
 namespace Contextual::SymbolParser {
 
@@ -186,7 +185,15 @@ JsonParseResult parseListToken(std::shared_ptr<SymbolToken>& token, const rapidj
         if (result.code != JsonParseReturnCode::kSuccess) {
             return result;
         }
-        items.push_back(item);
+
+        if(item->getType() == TokenType::kList) {
+            // Special behavior: Nested list tokens are flattened instead
+            const auto& listItem = std::static_pointer_cast<TokenList>(item);
+            items.insert(items.end(), listItem->getValue().begin(), listItem->getValue().end());
+        } else {
+            items.push_back(item);
+        }
+
     }
     token = std::make_shared<TokenList>(std::move(items));
     return JsonUtils::g_RESULT_SUCCESS;
@@ -274,7 +281,7 @@ JsonParseResult parseSymbol(
     if (result.code != JsonParseReturnCode::kSuccess) {
         return result;
     }
-    if (symbols.find(name) != symbols.end() && (!otherSymbols || otherSymbols->find(name) != otherSymbols->end())) {
+    if (symbols.find(name) != symbols.end() || (otherSymbols && otherSymbols->find(name) != otherSymbols->end())) {
         return {JsonParseReturnCode::kAlreadyDefined, "Symbol \"" + name + "\" is already defined"};
     }
 

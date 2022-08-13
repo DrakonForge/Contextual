@@ -25,6 +25,20 @@
           }
         ]
       }
+    },
+    {
+      "Name": "A",
+      "Type": "List",
+      "Value": [
+        {
+          "Type": "String",
+          "Value": "A"
+        },
+        {
+          "Type": "String",
+          "Value": "B"
+        }
+      ]
     }
   ],
   "Categories": [
@@ -92,13 +106,44 @@
                   }
                 }
               ]
+            },
+            {
+              "Name": "B",
+              "Type": "List",
+              "Value": [
+                {
+                  "Type": "Symbol",
+                  "Value": "A"
+                },
+                {
+                  "Type": "String",
+                  "Value": "C"
+                },
+                {
+                  "Type": "String",
+                  "Value": "D"
+                },
+                {
+                  "Type": "List",
+                  "Value": [
+                    {
+                      "Type": "String",
+                      "Value": "E"
+                    },
+                    {
+                      "Type": "String",
+                      "Value": "F"
+                    }
+                  ]
+                }
+              ]
             }
           ],
           "Response": [
             {
               "Type": "Random",
               "Value": [
-                "@subject"
+                "@B"
               ]
             }
           ]
