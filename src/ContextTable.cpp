@@ -11,7 +11,10 @@ ContextTable::ContextTable(std::shared_ptr<ContextManager> manager) : m_manager(
 void ContextTable::set(const std::string& key, const std::string& strValue) {
     int symbol = m_manager->getStringTable().cache(strValue);
     FactTuple tuple = {FactType::kString, static_cast<float>(symbol)};
-    m_basicContext.emplace(key, tuple);
+    if(m_listContext) {
+        m_listContext->erase(key);
+    }
+    m_basicContext.insert_or_assign(key, tuple);
 }
 
 void ContextTable::set(const std::string& key, const char* strValue) {
@@ -20,24 +23,34 @@ void ContextTable::set(const std::string& key, const char* strValue) {
 
 void ContextTable::set(const std::string& key, float floatValue) {
     FactTuple tuple = {FactType::kNumber, floatValue};
-    m_basicContext.emplace(key, tuple);
+    if(m_listContext) {
+        m_listContext->erase(key);
+    }
+    m_basicContext.insert_or_assign(key, tuple);
 }
 
 void ContextTable::set(const std::string& key, int intValue) {
     FactTuple tuple = {FactType::kNumber, static_cast<float>(intValue)};
-    m_basicContext.emplace(key, tuple);
+    if(m_listContext) {
+        m_listContext->erase(key);
+    }
+    m_basicContext.insert_or_assign(key, tuple);
 }
 
 void ContextTable::set(const std::string& key, bool boolValue) {
     FactTuple tuple = {FactType::kBoolean, static_cast<float>(boolValue)};
-    m_basicContext.emplace(key, tuple);
+    if(m_listContext) {
+        m_listContext->erase(key);
+    }
+    m_basicContext.insert_or_assign(key, tuple);
 }
 
 void ContextTable::set(const std::string& key, std::unique_ptr<std::unordered_set<int>>& listValue, bool isStringList) {
     if (!m_listContext) {
         m_listContext = std::unordered_map<std::string, std::pair<std::unique_ptr<std::unordered_set<int>>, bool>>();
     }
-    m_listContext->emplace(key, std::make_pair(std::move(listValue), isStringList));
+    m_basicContext.erase(key);
+    m_listContext->insert_or_assign(key, std::make_pair(std::move(listValue), isStringList));
 }
 
 void ContextTable::set(const std::string& key, std::unique_ptr<std::unordered_set<int>>& listValue) {
@@ -100,7 +113,7 @@ const std::unique_ptr<std::unordered_set<int>>& ContextTable::getList(const std:
         return g_NOT_FOUND;
     }
     auto got = m_listContext->find(key);
-    if(got == m_listContext->end()) {
+    if (got == m_listContext->end()) {
         return g_NOT_FOUND;
     }
     return got->second.first;
@@ -111,7 +124,7 @@ bool ContextTable::isStringList(const std::string& key) const {
         return false;
     }
     auto got = m_listContext->find(key);
-    if(got == m_listContext->end()) {
+    if (got == m_listContext->end()) {
         return false;
     }
     return got->second.second;
@@ -122,10 +135,10 @@ std::optional<std::vector<std::string>> ContextTable::toStringList(const std::st
         return std::nullopt;
     }
     auto got = m_listContext->find(key);
-    if(got == m_listContext->end()) {
+    if (got == m_listContext->end()) {
         return std::nullopt;
     }
-    if(!got->second.second) {
+    if (!got->second.second) {
         return std::nullopt;
     }
 
