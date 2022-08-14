@@ -1,9 +1,27 @@
-cmake_minimum_required(VERSION 3.7)
+cmake_minimum_required(VERSION 3.18 FATAL_ERROR)
 project(Contextual)
 
 set(CMAKE_CXX_STANDARD 17)
 
-include("${CMAKE_SOURCE_DIR}/vendor/rapidjson.cmake")
+# Based on: https://github.com/owensgroup/RXMesh/blob/main/CMakeLists.txt
+include(FetchContent)
+
+# GoogleTest
+FetchContent_Declare(googletest
+        GIT_REPOSITORY https://github.com/google/googletest.git
+        GIT_TAG 58d77fa8070e8cec2dc1ed015d66b454c8d78850 # 1.12.1
+        )
+FetchContent_MakeAvailable(googletest)
+# For Windows: Prevent overriding the parent project's compiler/linker settings
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(googletest)
+
+# rapidjson
+FetchContent_Declare(rapidjson
+        GIT_REPOSITORY https://github.com/Tencent/rapidjson.git
+        GIT_TAG        f54b0e47a08782a6131cc3d60f94d038fa6e0a51
+        )
+FetchContent_Populate(rapidjson)
 
 set(EXECUTABLE_NAME context)
 set(SOURCES
@@ -13,6 +31,7 @@ set(SOURCES
         src/ContextTable.cpp
         src/RuleDatabase.cpp
         src/RuleTable.cpp
+        src/DatabaseQuery.cpp
         src/json/DatabaseParser.cpp
         src/json/SymbolParser.cpp
         src/json/RuleParser.cpp
@@ -20,7 +39,6 @@ set(SOURCES
         src/token/TokenBoolean.cpp
         src/token/TokenContext.cpp
         src/token/TokenString.cpp
-        src/DatabaseQuery.cpp
         src/token/TokenFloat.cpp
         src/token/TokenFunction.cpp
         src/token/TokenInt.cpp
@@ -39,6 +57,7 @@ set(SOURCES
         src/response/ResponseSimple.cpp
         src/response/ResponseMultiple.cpp
         src/response/ResponseSpeech.cpp
+        src/response/ResponseEvent.cpp
         src/speech/SpeechTokenizer.cpp
         src/speech/SpeechGenerator.cpp
         src/function/FunctionTable.cpp
@@ -51,8 +70,10 @@ set(INCLUDE_DIR
         ${CMAKE_SOURCE_DIR}/include/speech
         ${CMAKE_SOURCE_DIR}/include/response
         ${CMAKE_SOURCE_DIR}/include/function
-        ${RAPIDJSON_INCLUDE_DIR})
+        ${rapidjson_SOURCE_DIR}/include)
 
 add_executable(${EXECUTABLE_NAME} ${SOURCES})
 target_include_directories(${EXECUTABLE_NAME} PUBLIC ${INCLUDE_DIR})
-add_dependencies(${EXECUTABLE_NAME} rapidjson)
+
+include(GoogleTest)
+add_subdirectory(tests)
