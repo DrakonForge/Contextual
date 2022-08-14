@@ -49,7 +49,8 @@ set(TEST_SOURCES
         ${CMAKE_SOURCE_DIR}/src/function/FunctionTable.cpp
         ${CMAKE_SOURCE_DIR}/src/function/DefaultFunctionTable.cpp
         Main.cpp
-        TestContextTable.cpp)
+        TestContextTable.cpp
+        TestSpeechTokenizer.cpp)
 
 add_executable(${TEST_EXECUTABLE} ${TEST_SOURCES})
 target_include_directories(${TEST_EXECUTABLE} PUBLIC ${INCLUDE_DIR})
