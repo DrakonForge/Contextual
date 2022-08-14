@@ -1,7 +1,11 @@
 #include <filesystem>
-#include <iostream>
 #include <iterator>
 #include <vector>
+
+#include <plog/Log.h>
+#include <plog/Init.h>
+#include <plog/Formatters/MessageOnlyFormatter.h>
+#include <plog/Appenders/ColorConsoleAppender.h>
 
 #include "ContextTable.h"
 #include "DatabaseParser.h"
@@ -23,16 +27,16 @@ void testDatabaseLoading() {
     std::filesystem::path path = std::filesystem::path("..") / std::filesystem::path("data");
     Contextual::RuleDatabase database(contextManager);
     Contextual::RuleParser::DatabaseStats stats = Contextual::RuleParser::loadDatabase(database, path.string());
-    std::cout << "Successful: " << stats.numLoaded << "\n";
-    std::cout << "Failed: " << stats.numFailed << "\n";
-    std::cout << "# Tables: " << stats.numTables << "\n";
-    std::cout << "# Rules: " << stats.numRules << "\n";
-    std::cout << "# Criteria Objects: " << Contextual::Criterion::getCount() << "\n";
-    std::cout << "StringTable Size: " << contextManager->getStringTable().getSize() << "\n";
+    PLOG_INFO << "Successful: " << stats.numLoaded;
+    PLOG_INFO << "Failed: " << stats.numFailed;
+    PLOG_INFO << "# Tables: " << stats.numTables;
+    PLOG_INFO << "# Rules: " << stats.numRules;
+    PLOG_INFO << "# Criteria Objects: " << Contextual::Criterion::getCount();
+    PLOG_INFO << "StringTable Size: " << contextManager->getStringTable().getSize();
 
-    std::cout << "\n";
+    PLOG_INFO << "";
     const std::unique_ptr<Contextual::RuleTable>& table = database.getRuleTable("Person", "Interact");
-    std::cout << "Nullptr: " << (table == nullptr) << "\n";
+    PLOG_INFO << "Nullptr: " << (table == nullptr);
 }
 
 void testResponseQueries(int numTimes, bool tokenize) {
@@ -55,43 +59,56 @@ void testResponseQueries(int numTimes, bool tokenize) {
 
     // Query database
     for (int i = 0; i < numTimes; ++i) {
-        std::string output;
         if (tokenize) {
             std::shared_ptr<Contextual::ResponseSpeech> speechResponse = database.queryBestSpeechLineResponse(query);
             if (speechResponse == nullptr) {
-                output += "Failed to get tokens\n";
+                PLOG_ERROR << "Failed to get tokens";
             } else {
                 std::vector<std::shared_ptr<Contextual::SpeechToken>> speechTokens = speechResponse->getRandomLine();
                 // Print out tokens
+                std::string output;
                 for (const auto& token : speechTokens) {
                     output += token->toString();
                 }
-                output += "\n";
+                PLOG_INFO << output;
 
                 // Print out line
                 std::vector<std::shared_ptr<Contextual::TextToken>> speechLine;
                 auto returnCode = Contextual::SpeechGenerator::generateLine(speechLine, query, speechTokens);
                 if (returnCode == Contextual::SpeechGeneratorReturnCode::kSuccess) {
-                    output += "\"" + Contextual::SpeechGenerator::getRawSpeechLine(speechLine) + "\"\n";
+                    PLOG_INFO << "\"" + Contextual::SpeechGenerator::getRawSpeechLine(speechLine) + "\"";
                 } else {
-                    output += "Failed to generate line\n";
+                    PLOG_ERROR << "Failed to generate line";
                 }
             }
         } else {
             std::vector<std::shared_ptr<Contextual::TextToken>> speechLine;
             Contextual::QueryReturnCode result = database.queryBestSpeechLine(speechLine, query);
             if (result != Contextual::QueryReturnCode::kSuccess) {
-                output += "Failed to generate line\n";
+                PLOG_ERROR << "Failed to generate line";
             } else {
-                output += "\"" + Contextual::SpeechGenerator::getRawSpeechLine(speechLine) + "\"\n";
+                PLOG_INFO << "\"" + Contextual::SpeechGenerator::getRawSpeechLine(speechLine) + "\"";
             }
         }
-        std::cout << output;
     }
 }
 
+void testLogger() {
+    PLOG_VERBOSE << "verbose";
+    PLOG_DEBUG << "debug";
+    PLOG_INFO << "info";
+    PLOG_WARNING << "warning";
+    PLOG_ERROR << "error";
+    PLOG_FATAL << "fatal";
+    PLOG_NONE << "none";
+}
+
 int main() {
-    // testDatabaseLoading();
-    testResponseQueries(5, true);
+    static plog::ColorConsoleAppender<plog::MessageOnlyFormatter> consoleAppender;
+    plog::init(plog::verbose, &consoleAppender);
+
+    //testLogger();
+    testDatabaseLoading();
+    //testResponseQueries(5, true);
     return 0;
 }

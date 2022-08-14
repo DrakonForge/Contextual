@@ -19,9 +19,16 @@ FetchContent_MakeAvailable(googletest)
 # rapidjson
 FetchContent_Declare(rapidjson
         GIT_REPOSITORY https://github.com/Tencent/rapidjson.git
-        GIT_TAG        f54b0e47a08782a6131cc3d60f94d038fa6e0a51
+        GIT_TAG        f54b0e47a08782a6131cc3d60f94d038fa6e0a51 # v1.1.0
         )
 FetchContent_Populate(rapidjson)
+
+# plog
+FetchContent_Declare(plog
+        GIT_REPOSITORY https://github.com/SergiusTheBest/plog.git
+        GIT_TAG 89ac49396ae6978a056034d1e34bb170bfd3de33 # 1.1.8
+        )
+FetchContent_Populate(plog)
 
 set(EXECUTABLE_NAME context)
 set(SOURCES
@@ -70,7 +77,8 @@ set(INCLUDE_DIR
         ${CMAKE_SOURCE_DIR}/include/speech
         ${CMAKE_SOURCE_DIR}/include/response
         ${CMAKE_SOURCE_DIR}/include/function
-        ${rapidjson_SOURCE_DIR}/include)
+        ${rapidjson_SOURCE_DIR}/include
+        ${plog_SOURCE_DIR}/include)
 
 add_executable(${EXECUTABLE_NAME} ${SOURCES})
 target_include_directories(${EXECUTABLE_NAME} PUBLIC ${INCLUDE_DIR})

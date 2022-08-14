@@ -1,11 +1,11 @@
 #include "DatabaseParser.h"
 
 #include <filesystem>
-#include <iostream>
 #include <optional>
 #include <queue>
 
 #define RAPIDJSON_HAS_STDSTRING 1
+#include <plog/Log.h>
 #include <rapidjson/document.h>
 #include <rapidjson/error/en.h>
 
@@ -172,7 +172,8 @@ JsonParseResult parseGroup(ParsedData& parsedData, const rapidjson::Value& root,
         if (parsedParent) {
             symbols.insert(parsedParent->symbols.begin(), parsedParent->symbols.end());
         }
-        result = SymbolParser::parseSymbols(symbols, root, std::nullopt, parsedData.database.getContextManager()->getFunctionTable());
+        result = SymbolParser::parseSymbols(symbols, root, std::nullopt,
+                                            parsedData.database.getContextManager()->getFunctionTable());
         if (result.code != JsonParseReturnCode::kSuccess) {
             return result;
         }
@@ -254,10 +255,10 @@ void resolveQueuedGroups(ParsedData& parsedData) {
             // Parent now loaded, proceed with parsing group
             auto result = parseGroup(parsedData, item.value, item.name, got->second);
             if (result.code == JsonParseReturnCode::kSuccess) {
-                std::cout << "Successfully parsed " << item.path << "\n";
+                PLOG_INFO << "Successfully parsed " << item.path;
                 ++parsedData.stats.numLoaded;
             } else if (result.code != JsonParseReturnCode::kSkipCreation) {
-                std::cerr << "Failed to parse " << item.path << ": " << result.errorMsg << "\n";
+                PLOG_ERROR << "Failed to parse " << item.path << ": " << result.errorMsg;
                 ++parsedData.stats.numFailed;
             }
             changed = true;
@@ -273,9 +274,9 @@ void resolveQueuedGroups(ParsedData& parsedData) {
                 parsedData.stats.numFailed += queue.size();
                 while (!queue.empty()) {
                     const auto& failedItem = queue.front();
-                    std::cerr << "Failed to parse " << failedItem.path
+                    PLOG_ERROR << "Failed to parse " << failedItem.path
                               << ": Unknown parent \"" + failedItem.parentName +
-                                     "\" (is it missing or circular reference)?\n";
+                                     "\" (is it missing or circular reference)?";
                     queue.pop();
                 }
             }
@@ -288,7 +289,7 @@ void resolveQueuedGroups(ParsedData& parsedData) {
 
 void readAllFiles(ParsedData& parsedData, const std::string& dirPath) {
     if (!std::filesystem::is_directory(dirPath)) {
-        std::cerr << "No directory found at path \"" << dirPath << "\"\n";
+        PLOG_ERROR << "No directory found at path \"" << dirPath << "\"";
         return;
     }
 
@@ -299,10 +300,10 @@ void readAllFiles(ParsedData& parsedData, const std::string& dirPath) {
             const std::string& path = file.path().string();
             auto result = readGroup(parsedData, path, false);
             if (result.code == JsonParseReturnCode::kSuccess) {
-                std::cout << "Successfully parsed " << path << "\n";
+                PLOG_INFO << "Successfully parsed " << path;
                 ++parsedData.stats.numLoaded;
             } else if (result.code != JsonParseReturnCode::kSkipCreation) {
-                std::cerr << "Failed to parse " << path << ": " << result.errorMsg << "\n";
+                PLOG_ERROR << "Failed to parse " << path << ": " << result.errorMsg;
                 ++parsedData.stats.numFailed;
             }
         }
