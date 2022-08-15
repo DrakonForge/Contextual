@@ -584,6 +584,9 @@ JsonParseResult parseResponseObject(std::shared_ptr<Response>& response, const r
         return parseSimpleResponse(response, value);
     }
     if (type == g_RESPONSE_EVENT) {
+        if (parsingType == ParsingType::kSimple) {
+            return {JsonParseReturnCode::kInvalidValue, "Simple groups should not contain event responses"};
+        }
         return parseEventResponse(response, value);
     }
 

@@ -14,6 +14,7 @@ public:
     [[nodiscard]] TokenType getType() const override;
     [[nodiscard]] std::string toString() const override;
     [[nodiscard]] const std::vector<std::shared_ptr<SymbolToken>>& getValue() const;
+    std::optional<std::string> evaluateList(DatabaseQuery& query, size_t& index) const;
 
 private:
     const std::vector<std::shared_ptr<SymbolToken>> m_tokens;

@@ -1,6 +1,7 @@
 #include "DefaultFunctionTable.h"
 
 #include <algorithm>
+#include <random>
 
 #include "SpeechGenerator.h"
 
@@ -103,12 +104,24 @@ FunctionVal listConcat(const std::vector<std::vector<int>>& lists, bool isString
 }
 
 FunctionVal prev(int index, DatabaseQuery& query) {
-    // TODO Implement
+    std::optional<std::string> prevChoice = query.getPrevChoice(index - 1);
+    if(prevChoice) {
+        return FunctionVal(*prevChoice);
+    }
     return FunctionVal();
 }
 
 FunctionVal prevMatch(int index, const std::vector<int>& list, DatabaseQuery& query) {
-    // TODO Implement
+    std::optional<size_t> prevChoiceIndex = query.getPrevChoiceIndex(index - 1);
+    if(prevChoiceIndex) {
+        if(*prevChoiceIndex < list.size()) {
+            // Guaranteed to be a string list
+            std::optional<std::string> str = query.getStringTable().lookup(list[*prevChoiceIndex]);
+            if(str) {
+                return FunctionVal(*str);
+            }
+        }
+    }
     return FunctionVal();
 }
 
@@ -165,8 +178,10 @@ FunctionVal mod(int a, int b) {
 }
 
 FunctionVal randInt(int min, int max) {
-    // TODO: Implement
-    return FunctionVal();
+    // TODO: Improve RNG generation
+    static std::default_random_engine e;
+    std::uniform_int_distribution<int> dis(min, max);
+    return FunctionVal(dis(e));
 }
 
 FunctionVal num(int num) {
@@ -187,13 +202,13 @@ FunctionVal ord(int num) {
 
 FunctionVal gender(const std::string& gender, std::string neutralStr, std::string maleStr, std::string femaleStr) {
     int index = genderToInt(gender);
-    if (index == 1) {
+    if (index == 0) {
         return FunctionVal(std::move(neutralStr));
     }
-    if (index == 2) {
+    if (index == 1) {
         return FunctionVal(std::move(maleStr));
     }
-    if (index == 3) {
+    if (index == 2) {
         return FunctionVal(std::move(femaleStr));
     }
     return FunctionVal();
@@ -218,8 +233,37 @@ FunctionVal boolNot(const bool a) {
     return FunctionVal(!a);
 }
 
-FunctionVal context(const std::string& key, DatabaseQuery& query) {
-    // TODO: Implement
+FunctionVal context(const std::string& table, const std::string& key, DatabaseQuery& query) {
+    std::shared_ptr<ContextTable> contextTable = query.getContextTable(table);
+    if (contextTable == nullptr) {
+        return FunctionVal();
+    }
+    FactType type = contextTable->getType(key);
+    if (type == FactType::kString) {
+        std::optional<std::string> value = contextTable->getString(key);
+        if (value) {
+            return FunctionVal(*value);
+        }
+    } else if (type == FactType::kList) {
+        const std::unique_ptr<std::unordered_set<int>>& value = contextTable->getList(key);
+        if (value != nullptr) {
+            bool isStringList = contextTable->isStringList(key);
+            std::vector<int> intList;
+            intList.reserve(value->size());
+            intList.insert(intList.end(), value->begin(), value->end());
+            return FunctionVal(std::move(intList), isStringList);
+        }
+    } else if (type == FactType::kBoolean) {
+        std::optional<bool> value = contextTable->getBool(key);
+        if (value) {
+            return FunctionVal(*value);
+        }
+    } else if (type == FactType::kNumber) {
+        std::optional<float> value = contextTable->getFloat(key);
+        if (value) {
+            return FunctionVal(*value);
+        }
+    }
     return FunctionVal();
 }
 
@@ -263,7 +307,8 @@ void DefaultFunctionTable::initialize() {
     registerFunction("and", TokenType::kBool, std::vector<TokenType>{TokenType::kBool, TokenType::kBool}, false);
     registerFunction("or", TokenType::kBool, std::vector<TokenType>{TokenType::kBool, TokenType::kBool}, false);
     registerFunction("not", TokenType::kBool, std::vector<TokenType>{TokenType::kBool}, false);
-    registerFunction("context", TokenType::kContext, std::vector<TokenType>{TokenType::kString}, false);
+    registerFunction("context", TokenType::kContext, std::vector<TokenType>{TokenType::kString, TokenType::kString},
+                     false);
     registerFunction("raw_num", TokenType::kString, std::vector<TokenType>{TokenType::kInt}, false);
 }
 
@@ -339,7 +384,7 @@ FunctionVal DefaultFunctionTable::doCall(const std::string& name, const std::vec
                 return FunctionVal();
             }
             lists.push_back(std::move(list->first));
-            if(!list->second) {
+            if (!list->second) {
                 isStringList = false;
             }
         }
@@ -501,15 +546,16 @@ FunctionVal DefaultFunctionTable::doCall(const std::string& name, const std::vec
         return boolNot(*a);
     }
     if (name == "context") {
-        std::optional<std::string> key = argToString(args[0], query);
-        if (!key) {
+        std::optional<std::string> table = argToString(args[0], query);
+        std::optional<std::string> key = argToString(args[1], query);
+        if (!table || !key) {
             return FunctionVal();
         }
-        return context(*key, query);
+        return context(*table, *key, query);
     }
-    if(name == "raw_num") {
+    if (name == "raw_num") {
         std::optional<int> n = argToInt(args[0], query);
-        if(!n) {
+        if (!n) {
             return FunctionVal();
         }
         return rawNum(*n);

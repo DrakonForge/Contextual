@@ -43,4 +43,28 @@ const std::string& DatabaseQuery::getCategory() const {
     return m_category;
 }
 
+void DatabaseQuery::clearPrevChoices() {
+    m_prevChoices.clear();
+    m_prevChoiceIndices.clear();
+}
+
+void DatabaseQuery::addPrevChoice(size_t index, std::string choice) {
+    m_prevChoices.push_back(std::move(choice));
+    m_prevChoiceIndices.push_back(index);
+}
+
+std::optional<std::string> DatabaseQuery::getPrevChoice(int index) const {
+    if(0 <= index && index < m_prevChoices.size()) {
+        return m_prevChoices[index];
+    }
+    return std::nullopt;
+}
+
+std::optional<size_t> DatabaseQuery::getPrevChoiceIndex(int index) const {
+    if(0 <= index && index < m_prevChoiceIndices.size()) {
+        return m_prevChoiceIndices[index];
+    }
+    return std::nullopt;
+}
+
 }  // namespace Contextual

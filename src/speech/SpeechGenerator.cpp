@@ -128,29 +128,39 @@ SpeechGeneratorReturnCode generateLine(std::vector<std::shared_ptr<TextToken>>& 
                                        const std::vector<std::shared_ptr<SpeechToken>>& speechTokens) {
     bool hasText = false;
     std::unordered_map<std::shared_ptr<SpeechToken>, std::unordered_set<std::string>> chosenListOptions;
+    query.clearPrevChoices();
     for (const auto& token : speechTokens) {
         if (token->isSymbolToken()) {
             hasText = true;
             const auto& symbolToken = std::static_pointer_cast<SymbolToken>(token);
-            std::optional<std::string> nextTokenStr = symbolToken->evaluate(query);
-            if (nextTokenStr) {
-                // Attempt to sample without replacement for list tokens
-                // If this fails, then continue with the choice (does not fail)
-                if (symbolToken->getType() == TokenType::kList) {
-                    int attempts = 0;
-                    auto got = chosenListOptions.find(symbolToken);
-                    if (got == chosenListOptions.end()) {
-                        got = chosenListOptions.emplace(symbolToken, std::unordered_set<std::string>()).first;
-                    }
-                    while (++attempts <= g_MAX_LIST_ATTEMPTS) {
-                        if (nextTokenStr && got->second.find(*nextTokenStr) == got->second.end()) {
-                            got->second.insert(*nextTokenStr);
-                            break;
-                        }
-                        nextTokenStr = symbolToken->evaluate(query);
+            std::optional<std::string> nextTokenStr;
+            size_t index;  // Used only for list tokens
+
+            // Attempt to sample without replacement for list tokens
+            // If this fails, then continue with the choice (does not fail)
+            if (symbolToken->getType() == TokenType::kList) {
+                const auto& listToken = std::static_pointer_cast<TokenList>(symbolToken);
+                int attempts = 0;
+                auto got = chosenListOptions.find(symbolToken);
+                if (got == chosenListOptions.end()) {
+                    got = chosenListOptions.emplace(symbolToken, std::unordered_set<std::string>()).first;
+                }
+                while (++attempts <= g_MAX_LIST_ATTEMPTS) {
+                    nextTokenStr = listToken->evaluateList(query, index);
+                    if (nextTokenStr && got->second.find(*nextTokenStr) == got->second.end()) {
+                        got->second.insert(*nextTokenStr);
+                        break;
                     }
                 }
+            } else {
+                nextTokenStr = symbolToken->evaluate(query);
+            }
+
+            if (nextTokenStr) {
                 speechLine.push_back(std::make_shared<TextLiteral>(std::move(*nextTokenStr)));
+                if (symbolToken->getType() == TokenType::kList) {
+                    query.addPrevChoice(index, *nextTokenStr);
+                }
             } else {
                 return SpeechGeneratorReturnCode::kFailure;
             }
