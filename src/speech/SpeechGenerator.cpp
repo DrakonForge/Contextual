@@ -157,10 +157,10 @@ SpeechGeneratorReturnCode generateLine(std::vector<std::shared_ptr<TextToken>>& 
             }
 
             if (nextTokenStr) {
-                speechLine.push_back(std::make_shared<TextLiteral>(std::move(*nextTokenStr)));
                 if (symbolToken->getType() == TokenType::kList) {
                     query.addPrevChoice(index, *nextTokenStr);
                 }
+                speechLine.push_back(std::make_shared<TextLiteral>(std::move(*nextTokenStr)));
             } else {
                 return SpeechGeneratorReturnCode::kFailure;
             }

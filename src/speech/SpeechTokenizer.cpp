@@ -149,6 +149,9 @@ SpeechTokenizerResult tokenizeValue(int& index, std::vector<std::shared_ptr<Spee
             // Done
             success = true;
             break;
+        } else {
+            value.push_back(c);
+            ++index;
         }
     }
     if (!success) {
@@ -541,9 +544,6 @@ SpeechTokenizerResult tokenize(std::vector<std::shared_ptr<SpeechToken>>& tokens
                 return {SpeechTokenizerReturnCode::kInvalidFormat, "Line should not end on a line break"};
             }
             deleteTrailingSpaces(nextString);
-            if (nextString.empty()) {
-                return {SpeechTokenizerReturnCode::kInvalidFormat, "Line break should not separate blank lines"};
-            }
             finishStringToken(nextString, tokens);
             tokens.push_back(g_TOKEN_LINEBREAK);
             consumeSpaces = true;

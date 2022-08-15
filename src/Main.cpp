@@ -44,7 +44,7 @@ void testResponseQueries(int numTimes, bool tokenize) {
     std::shared_ptr<Contextual::ContextManager> contextManager = createDefaultContextManager();
     std::filesystem::path path = std::filesystem::path("..") / std::filesystem::path("data");
     Contextual::RuleDatabase database(contextManager);
-    Contextual::RuleParser::DatabaseStats stats = Contextual::RuleParser::loadDatabase(database, path.string());
+    Contextual::RuleParser::loadDatabase(database, path.string());
 
     // Create query
     Contextual::DatabaseQuery query(contextManager, "Person", "Interact");
@@ -106,9 +106,10 @@ void testLogger() {
 int main() {
     static plog::ColorConsoleAppender<plog::MessageOnlyFormatter> consoleAppender;
     plog::init(plog::verbose, &consoleAppender);
+    PLOG_INFO << "Initializing tool...";
 
     //testLogger();
-    testDatabaseLoading();
-    //testResponseQueries(5, true);
+    //testDatabaseLoading();
+    testResponseQueries(5, false);
     return 0;
 }

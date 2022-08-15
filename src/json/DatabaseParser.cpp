@@ -105,6 +105,10 @@ JsonParseResult parseCategory(ParsedData& parsedData, std::unordered_map<std::st
                 "Category \"" + categoryName + "\" for group \"" + groupName + "\" is already defined"};
     }
 
+    if(!root.HasMember(g_KEY_CATEGORY_RULES)) {
+        return {JsonParseReturnCode::kMissingKey, "Category must specify key \"" + g_KEY_CATEGORY_RULES + "\""};
+    }
+
     const auto& rulesValue = root[g_KEY_CATEGORY_RULES];
     if (!rulesValue.IsArray()) {
         return {JsonParseReturnCode::kInvalidType, "Key \"" + g_KEY_CATEGORY_RULES + "\" must be an array"};

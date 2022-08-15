@@ -108,6 +108,84 @@
               ]
             },
             {
+              "Name": "ordinals",
+              "Type": "List",
+              "Value": [
+                {
+                  "Type": "Function",
+                  "Value": {
+                    "Name": "ord",
+                    "Args": [
+                      {
+                        "Type": "Integer",
+                        "Value": 1
+                      }
+                    ]
+                  }
+                },
+                {
+                  "Type": "Function",
+                  "Value": {
+                    "Name": "ord",
+                    "Args": [
+                      {
+                        "Type": "Integer",
+                        "Value": 2
+                      }
+                    ]
+                  }
+                },
+                {
+                  "Type": "Function",
+                  "Value": {
+                    "Name": "ord",
+                    "Args": [
+                      {
+                        "Type": "Integer",
+                        "Value": 3
+                      }
+                    ]
+                  }
+                },
+                {
+                  "Type": "Function",
+                  "Value": {
+                    "Name": "ord",
+                    "Args": [
+                      {
+                        "Type": "Integer",
+                        "Value": 4
+                      }
+                    ]
+                  }
+                },
+                {
+                  "Type": "Function",
+                  "Value": {
+                    "Name": "ord",
+                    "Args": [
+                      {
+                        "Type": "Integer",
+                        "Value": 5
+                      }
+                    ]
+                  }
+                },
+                {
+                  "Type": "Function",
+                  "Value": {
+                    "Name": "ord",
+                    "Args": [
+                      {
+                        "Type": "Integer",
+                        "Value": 6
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            {
               "Name": "B",
               "Type": "List",
               "Value": [
@@ -143,7 +221,7 @@
             {
               "Type": "Random",
               "Value": [
-                "@B, @B, @B, @B, and @B"
+                "The order is @B, @B, @B, @B, and @B. In reverse: @prev(5), @prev(4), @prev(3), @prev(2), @prev(1). The last item, @prev(5), is the @prev_match(5, @ordinals) letter of the alphabet."
               ]
             }
           ]
