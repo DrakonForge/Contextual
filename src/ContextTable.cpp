@@ -11,7 +11,7 @@ ContextTable::ContextTable(std::shared_ptr<ContextManager> manager) : m_manager(
 void ContextTable::set(const std::string& key, const std::string& strValue) {
     int symbol = m_manager->getStringTable().cache(strValue);
     FactTuple tuple = {FactType::kString, static_cast<float>(symbol)};
-    if(m_listContext) {
+    if (m_listContext) {
         m_listContext->erase(key);
     }
     m_basicContext.insert_or_assign(key, tuple);
@@ -23,7 +23,7 @@ void ContextTable::set(const std::string& key, const char* strValue) {
 
 void ContextTable::set(const std::string& key, float floatValue) {
     FactTuple tuple = {FactType::kNumber, floatValue};
-    if(m_listContext) {
+    if (m_listContext) {
         m_listContext->erase(key);
     }
     m_basicContext.insert_or_assign(key, tuple);
@@ -31,7 +31,7 @@ void ContextTable::set(const std::string& key, float floatValue) {
 
 void ContextTable::set(const std::string& key, int intValue) {
     FactTuple tuple = {FactType::kNumber, static_cast<float>(intValue)};
-    if(m_listContext) {
+    if (m_listContext) {
         m_listContext->erase(key);
     }
     m_basicContext.insert_or_assign(key, tuple);
@@ -39,10 +39,22 @@ void ContextTable::set(const std::string& key, int intValue) {
 
 void ContextTable::set(const std::string& key, bool boolValue) {
     FactTuple tuple = {FactType::kBoolean, static_cast<float>(boolValue)};
-    if(m_listContext) {
+    if (m_listContext) {
         m_listContext->erase(key);
     }
     m_basicContext.insert_or_assign(key, tuple);
+}
+
+void ContextTable::setRawValue(const std::string& key, float value, FactType type) {
+    if (type == FactType::kNull || type == FactType::kList) {
+        // Not allowed type
+        return;
+    }
+    FactTuple tuple = {type, value};
+    if (m_listContext) {
+        m_listContext->erase(key);
+    }
+    m_basicContext.insert_or_assign(key, tuple)
 }
 
 void ContextTable::set(const std::string& key, std::unique_ptr<std::unordered_set<int>>& listValue, bool isStringList) {
@@ -73,6 +85,13 @@ void ContextTable::set(const std::string& key, const std::unordered_set<std::str
         intValues->insert(symbolTable.cache(str));
     }
     set(key, intValues, true);
+}
+
+void ContextTable::remove(const std::string& key) {
+    m_basicContext.erase(key);
+    if (m_listContext) {
+        m_listContext->erase(key);
+    }
 }
 
 std::optional<std::string> ContextTable::getString(const std::string& key) const {

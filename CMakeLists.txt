@@ -68,7 +68,10 @@ set(SOURCES
         src/speech/SpeechTokenizer.cpp
         src/speech/SpeechGenerator.cpp
         src/function/FunctionTable.cpp
-        src/function/DefaultFunctionTable.cpp)
+        src/function/DefaultFunctionTable.cpp
+        src/response/ResponseContext.cpp
+        src/response/ResponseContextSetStatic.cpp
+        src/response/ResponseContextSetDynamic.cpp)
 set(INCLUDE_DIR
         ${CMAKE_SOURCE_DIR}/include
         ${CMAKE_SOURCE_DIR}/include/json

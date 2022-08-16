@@ -94,7 +94,7 @@ TEST_F(ContextTableTest, TestIntListExplicit) {
     list->insert(1);
     list->insert(2);
     list->insert(3);
-    m_contextTable->set("Key", list, false);
+    m_contextTable->setRawValue("Key", list, false);
 
     EXPECT_TRUE(m_contextTable->hasKey("Key"));
     EXPECT_EQ(m_contextTable->getType("Key"), FactType::kList);

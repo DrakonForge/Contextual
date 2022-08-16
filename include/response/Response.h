@@ -2,15 +2,12 @@
 
 namespace Contextual {
 
-enum class ResponseType {
-    kMultiple,
-    kSimple,
-    kSpeech,
-    kEvent
-};
+enum class ResponseType { kMultiple, kSimple, kSpeech, kEvent, kContext };
+
 class Response {
 public:
     [[nodiscard]] virtual ResponseType getType() const = 0;
+
 protected:
     Response() = default;
 };
