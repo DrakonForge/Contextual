@@ -15,6 +15,7 @@ struct Criteria {
     std::string table;
     std::string key;
     std::shared_ptr<Criterion> criterion;
+
     Criteria(std::string table, std::string key, std::shared_ptr<Criterion> criterion)
         : table(std::move(table)), key(std::move(key)), criterion(std::move(criterion)) {}
 };
@@ -52,17 +53,22 @@ class RuleTable {
 public:
     RuleTable() = default;
     virtual ~RuleTable() = default;
-    void addEntry(std::unique_ptr<RuleEntry>& ruleEntry);
+    void addEntry(std::shared_ptr<RuleEntry>& ruleEntry);
+    void addEntries(const std::vector<std::shared_ptr<RuleEntry>>& ruleEntries);
     bool sortEntries();
     [[nodiscard]] BestMatch queryBest(const DatabaseQuery& query) const;
     [[nodiscard]] UniformMatch queryUniform(const DatabaseQuery& query) const;
     [[nodiscard]] WeightedMatch queryWeighted(const DatabaseQuery& query) const;
-    [[nodiscard]] SimpleUniformMatch querySimpleUniform(const DatabaseQuery& query, const std::unordered_set<std::string>& skip, bool unique) const;
-    [[nodiscard]] SimpleWeightedMatch querySimpleWeighted(const DatabaseQuery& query, const std::unordered_set<std::string>& skip, bool unique) const;
+    [[nodiscard]] SimpleUniformMatch querySimpleUniform(const DatabaseQuery& query,
+                                                        const std::unordered_set<std::string>& skip, bool unique) const;
+    [[nodiscard]] SimpleWeightedMatch querySimpleWeighted(const DatabaseQuery& query,
+                                                          const std::unordered_set<std::string>& skip,
+                                                          bool unique) const;
     [[nodiscard]] size_t getNumEntries() const;
+    [[nodiscard]] const std::vector<std::shared_ptr<RuleEntry>> getEntries() const;
 
 private:
-    std::vector<std::unique_ptr<RuleEntry>> m_entries;
+    std::vector<std::shared_ptr<RuleEntry>> m_entries;
     bool m_sorted = false;
 };
 

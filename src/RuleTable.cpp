@@ -10,10 +10,10 @@
 namespace Contextual {
 
 namespace {
-const std::unique_ptr<RuleEntry> g_NOT_FOUND = nullptr;
+const std::shared_ptr<RuleEntry> g_NOT_FOUND = nullptr;
 
 // Descending order
-bool compareEntries(const std::unique_ptr<RuleEntry>& entry1, const std::unique_ptr<RuleEntry>& entry2) {
+bool compareEntries(const std::shared_ptr<RuleEntry>& entry1, const std::shared_ptr<RuleEntry>& entry2) {
     return entry1->priority > entry2->priority;
 }
 
@@ -26,9 +26,14 @@ bool match(const DatabaseQuery& query, const std::vector<std::shared_ptr<Criteri
 
 }  // namespace
 
-void RuleTable::addEntry(std::unique_ptr<RuleEntry>& ruleEntry) {
+void RuleTable::addEntry(std::shared_ptr<RuleEntry>& ruleEntry) {
     m_entries.push_back(std::move(ruleEntry));
     m_sorted = false;
+}
+
+void RuleTable::addEntries(const std::vector<std::shared_ptr<RuleEntry>>& ruleEntries) {
+    m_entries.reserve(m_entries.size() + ruleEntries.size());
+    m_entries.insert(m_entries.end(), ruleEntries.begin(), ruleEntries.end());
 }
 
 bool RuleTable::sortEntries() {
@@ -169,6 +174,10 @@ SimpleWeightedMatch RuleTable::querySimpleWeighted(const DatabaseQuery& query,
 
 size_t RuleTable::getNumEntries() const {
     return m_entries.size();
+}
+
+const std::vector<std::shared_ptr<RuleEntry>> RuleTable::getEntries() const {
+    return m_entries;
 }
 
 }  // namespace Contextual

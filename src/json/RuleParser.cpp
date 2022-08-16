@@ -630,7 +630,7 @@ JsonParseResult parseResponse(std::shared_ptr<Response>& response, const rapidjs
 
 }  // namespace
 
-JsonParseResult parseRule(StringTable& stringTable, std::unique_ptr<RuleEntry>& rule,
+JsonParseResult parseRule(StringTable& stringTable, std::shared_ptr<RuleEntry>& rule,
                           std::unordered_map<std::string, RuleInfo>& namedRules, int& nextId,
                           const rapidjson::Value& root, const std::string& idPrefix, const ParsingType parsingType,
                           const std::unordered_map<std::string, std::shared_ptr<SymbolToken>>& symbols,
@@ -683,7 +683,7 @@ JsonParseResult parseRule(StringTable& stringTable, std::unique_ptr<RuleEntry>& 
         return {JsonParseReturnCode::kSkipCreation, ""};
     }
 
-    rule = std::make_unique<RuleEntry>();
+    rule = std::make_shared<RuleEntry>();
     rule->id = id;
     rule->criteria = criteria;
     rule->priority = priority;

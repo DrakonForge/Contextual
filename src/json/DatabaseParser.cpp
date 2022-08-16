@@ -25,6 +25,7 @@ const std::string g_KEY_PARENT = "Parent";
 const std::string g_KEY_TYPE = "Type";
 const std::string g_KEY_CATEGORIES = "Categories";
 const std::string g_KEY_CATEGORY_NAME = "Name";
+const std::string g_KEY_CATEGORY_INHERIT = "Inherit";
 const std::string g_KEY_CATEGORY_RULES = "Rules";
 
 const std::string g_TYPE_DEFAULT = "Default";
@@ -36,6 +37,7 @@ const std::string g_EXT_JSON = ".json";
 // Structs
 
 struct ParsedGroup {
+    std::string name;
     std::unordered_map<std::string, std::shared_ptr<SymbolToken>> symbols;
     std::unordered_map<std::string, RuleParser::RuleInfo> namedRules;
 };
@@ -83,7 +85,7 @@ JsonParseResult getParsingType(ParsingType& type, const rapidjson::Value& root) 
 JsonParseResult parseCategory(ParsedData& parsedData, std::unordered_map<std::string, RuleParser::RuleInfo>& namedRules,
                               const ParsingType parsingType, const rapidjson::Value& root,
                               const std::unordered_map<std::string, std::shared_ptr<SymbolToken>>& symbols,
-                              const std::string& groupName) {
+                              const std::string& groupName, const std::optional<ParsedGroup>& parsedParent) {
     if (!root.IsObject()) {
         return {JsonParseReturnCode::kInvalidType, "Category must be a JSON object"};
     }
@@ -105,32 +107,52 @@ JsonParseResult parseCategory(ParsedData& parsedData, std::unordered_map<std::st
                 "Category \"" + categoryName + "\" for group \"" + groupName + "\" is already defined"};
     }
 
-    if(!root.HasMember(g_KEY_CATEGORY_RULES)) {
-        return {JsonParseReturnCode::kMissingKey, "Category must specify key \"" + g_KEY_CATEGORY_RULES + "\""};
-    }
-
-    const auto& rulesValue = root[g_KEY_CATEGORY_RULES];
-    if (!rulesValue.IsArray()) {
-        return {JsonParseReturnCode::kInvalidType, "Key \"" + g_KEY_CATEGORY_RULES + "\" must be an array"};
+    // Assumes Inherit is true
+    bool inheritParent = true;
+    if (root.HasMember(g_KEY_CATEGORY_INHERIT)) {
+        const auto& inheritValue = root[g_KEY_CATEGORY_INHERIT];
+        if (!inheritValue.IsBool()) {
+            return {JsonParseReturnCode::kInvalidType, "Key \"" + g_KEY_CATEGORY_INHERIT + "\" must be a boolean"};
+        }
+        inheritParent = inheritValue.GetBool();
     }
 
     auto ruleTable = std::make_unique<RuleTable>();
-    int nextId = 0;  // ID used for unnamed rules
-    const std::string idPrefix = groupName + "." + categoryName + ".";
-    StringTable& stringTable = parsedData.database.getContextManager()->getStringTable();
-    for (auto iter = rulesValue.Begin(); iter != rulesValue.End(); ++iter) {
-        std::unique_ptr<RuleEntry> ruleEntry;
-        result = RuleParser::parseRule(stringTable, ruleEntry, namedRules, nextId, *iter, idPrefix, parsingType,
-                                       symbols, parsedData.database.getContextManager()->getFunctionTable());
-        if (result.code == JsonParseReturnCode::kSkipCreation) {
-            continue;
+
+    // If Inherit is true, then add all the rules of the parent if it exists
+    if (inheritParent && parsedParent) {
+        const std::unique_ptr<RuleTable>& parentTable =
+            parsedData.database.getRuleTable(parsedParent->name, categoryName);
+        if (parentTable != nullptr) {
+            ruleTable->addEntries(parentTable->getEntries());
         }
-        if (result.code != JsonParseReturnCode::kSuccess) {
-            return result;
-        }
-        ruleTable->addEntry(ruleEntry);
-        ++parsedData.stats.numRules;
     }
+
+    // Read new rules
+    if (root.HasMember(g_KEY_CATEGORY_RULES)) {
+        const auto& rulesValue = root[g_KEY_CATEGORY_RULES];
+        if (!rulesValue.IsArray()) {
+            return {JsonParseReturnCode::kInvalidType, "Key \"" + g_KEY_CATEGORY_RULES + "\" must be an array"};
+        }
+        int nextId = 0;  // ID used for unnamed rules
+        const std::string idPrefix = groupName + "." + categoryName + ".";
+        StringTable& stringTable = parsedData.database.getContextManager()->getStringTable();
+        for (auto iter = rulesValue.Begin(); iter != rulesValue.End(); ++iter) {
+            std::shared_ptr<RuleEntry> ruleEntry;
+            result = RuleParser::parseRule(stringTable, ruleEntry, namedRules, nextId, *iter, idPrefix, parsingType,
+                                           symbols, parsedData.database.getContextManager()->getFunctionTable());
+            if (result.code == JsonParseReturnCode::kSkipCreation) {
+                continue;
+            }
+            if (result.code != JsonParseReturnCode::kSuccess) {
+                return result;
+            }
+            ruleTable->addEntry(ruleEntry);
+            ++parsedData.stats.numRules;
+        }
+    }
+
+    // If rule table is not empty, add it
     if (ruleTable->getNumEntries() > 0) {
         ruleTable->sortEntries();
         parsedData.database.addRuleTable(groupName, categoryName, ruleTable);
@@ -143,14 +165,14 @@ JsonParseResult parseCategories(ParsedData& parsedData,
                                 std::unordered_map<std::string, RuleParser::RuleInfo>& namedRules,
                                 const ParsingType parsingType, const rapidjson::Value& root,
                                 const std::unordered_map<std::string, std::shared_ptr<SymbolToken>>& symbols,
-                                const std::string& groupName) {
+                                const std::string& groupName, const std::optional<ParsedGroup>& parsedParent) {
     if (root.HasMember(g_KEY_CATEGORIES)) {
         const auto& value = root[g_KEY_CATEGORIES];
         if (!value.IsArray()) {
             return {JsonParseReturnCode::kInvalidType, "Key \"" + g_KEY_CATEGORIES + "\" must be an array"};
         }
         for (auto iter = value.Begin(); iter != value.End(); ++iter) {
-            auto result = parseCategory(parsedData, namedRules, parsingType, *iter, symbols, groupName);
+            auto result = parseCategory(parsedData, namedRules, parsingType, *iter, symbols, groupName, parsedParent);
             if (result.code != JsonParseReturnCode::kSuccess) {
                 return result;
             }
@@ -184,12 +206,12 @@ JsonParseResult parseGroup(ParsedData& parsedData, const rapidjson::Value& root,
     }
 
     std::unordered_map<std::string, RuleParser::RuleInfo> namedRules;
-    result = parseCategories(parsedData, namedRules, parsingType, root, symbols, name);
+    result = parseCategories(parsedData, namedRules, parsingType, root, symbols, name, parsedParent);
     if (result.code != JsonParseReturnCode::kSuccess) {
         return result;
     }
 
-    parsedData.parsedGroups.insert({name, {symbols, namedRules}});
+    parsedData.parsedGroups.insert({name, {name, symbols, namedRules}});
     return JsonUtils::g_RESULT_SUCCESS;
 }
 
@@ -279,8 +301,8 @@ void resolveQueuedGroups(ParsedData& parsedData) {
                 while (!queue.empty()) {
                     const auto& failedItem = queue.front();
                     PLOG_ERROR << "Failed to parse " << failedItem.path
-                              << ": Unknown parent \"" + failedItem.parentName +
-                                     "\" (is it missing or circular reference)?";
+                               << ": Unknown parent \"" + failedItem.parentName +
+                                      "\" (is it missing or circular reference)?";
                     queue.pop();
                 }
             }
