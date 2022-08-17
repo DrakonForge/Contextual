@@ -1,4 +1,4 @@
-#pragma ResponseContext
+#pragma once
 
 #include <string>
 

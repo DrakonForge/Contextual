@@ -54,6 +54,7 @@ void testResponseQueries(int numTimes, bool tokenize) {
     std::shared_ptr<Contextual::ContextTable> listenerTable =
         std::make_shared<Contextual::ContextTable>(contextManager);
     listenerTable->set("Name", "jeff");
+    listenerTable->set("Count", 0);
     query.addContextTable("Faction", factionTable);
     query.addContextTable("Listener", listenerTable);
 

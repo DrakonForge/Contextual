@@ -2,6 +2,7 @@
 
 #include <utility>
 
+#include "ResponseContext.h"
 #include "ResponseMultiple.h"
 #include "SpeechGenerator.h"
 
@@ -128,6 +129,9 @@ QueryReturnCode RuleDatabase::querySimpledWeightedMatch(SimpleWeightedMatch& sim
     return QueryReturnCode::kSuccess;
 }
 
+// Single workflow that queries the best matching line from the speechbank,
+// then extracts the speech line and also performs all other operations.
+// Does not necessarily have to be in this class.
 std::shared_ptr<ResponseSpeech> RuleDatabase::queryBestSpeechLineResponse(DatabaseQuery& query) const {
     BestMatch bestMatch;
     auto returnCode = queryBestMatch(bestMatch, query);
@@ -141,11 +145,24 @@ std::shared_ptr<ResponseSpeech> RuleDatabase::queryBestSpeechLineResponse(Databa
         return std::static_pointer_cast<ResponseSpeech>(bestMatch.response);
     } else if (bestMatch.response->getType() == ResponseType::kMultiple) {
         const auto& multipleResponse = std::static_pointer_cast<ResponseMultiple>(bestMatch.response);
+        std::shared_ptr<ResponseSpeech> responseSpeech;
+
+        // Go through all responses
         for (const auto& response : multipleResponse->getResponses()) {
+            if(response->getType() == ResponseType::kContext) {
+                const auto& contextResponse = std::static_pointer_cast<ResponseContext>(response);
+                contextResponse->execute(query);
+            }
             if (response->getType() == ResponseType::kSpeech) {
-                return std::static_pointer_cast<ResponseSpeech>(response);
+                if(responseSpeech == nullptr) {
+                    responseSpeech = std::static_pointer_cast<ResponseSpeech>(response);
+                }
+                // Only the first speech response matters (or should exist)
             }
         }
+
+        // Can be nullptr
+        return responseSpeech;
     }
 
     return nullptr;

@@ -1,6 +1,12 @@
 #include "RuleParser.h"
 
 #include "CriteriaParser.h"
+#include "ResponseContextAdd.h"
+#include "ResponseContextInvert.h"
+#include "ResponseContextMultiply.h"
+#include "ResponseContextSetDynamic.h"
+#include "ResponseContextSetList.h"
+#include "ResponseContextSetStatic.h"
 #include "ResponseEvent.h"
 #include "ResponseMultiple.h"
 #include "ResponseSimple.h"
@@ -21,6 +27,19 @@ const std::string g_KEY_RESPONSE_EVENT_ARGS = "Args";
 
 const std::string g_RESPONSE_RANDOM = "Random";
 const std::string g_RESPONSE_EVENT = "Event";
+const std::string g_RESPONSE_CONTEXT = "Context";
+const std::string g_RESPONSE_CONTEXT_OP = "Op";
+const std::string g_RESPONSE_CONTEXT_TABLE = "Table";
+const std::string g_RESPONSE_CONTEXT_KEY = "Key";
+const std::string g_RESPONSE_CONTEXT_VALUE = "Value";
+
+const std::string g_OP_SET = "Set";
+const std::string g_OP_INVERT = "Invert";
+const std::string g_OP_ADD = "Add";
+const std::string g_OP_SUB = "Sub";
+const std::string g_OP_MULT = "Mult";
+const std::string g_OP_DIV = "Div";
+
 const std::string g_DEFAULT_ID = "Id";
 
 JsonParseResult parseSpeechResponse(std::shared_ptr<Response>& response, const rapidjson::Value& value,
@@ -102,8 +121,147 @@ JsonParseResult parseEventResponse(std::shared_ptr<Response>& response, const ra
     return JsonUtils::g_RESULT_SUCCESS;
 }
 
-JsonParseResult parseResponseObject(std::shared_ptr<Response>& response, const rapidjson::Value& root,
-                                    const ParsingType parsingType,
+JsonParseResult parseContextResponse(std::shared_ptr<Response>& response, StringTable& stringTable,
+                                     const rapidjson::Value& root) {
+    if (!root.IsObject()) {
+        return {JsonParseReturnCode::kInvalidType, "Context response value must be an object"};
+    }
+    if (!root.HasMember(g_RESPONSE_CONTEXT_OP)) {
+        return {JsonParseReturnCode::kMissingKey,
+                "Context response value must specify key \"" + g_RESPONSE_CONTEXT_OP + "\""};
+    }
+    if (!root.HasMember(g_RESPONSE_CONTEXT_TABLE)) {
+        return {JsonParseReturnCode::kMissingKey,
+                "Context response value must specify key \"" + g_RESPONSE_CONTEXT_TABLE + "\""};
+    }
+    if (!root.HasMember(g_RESPONSE_CONTEXT_KEY)) {
+        return {JsonParseReturnCode::kMissingKey,
+                "Context response value must specify key \"" + g_RESPONSE_CONTEXT_KEY + "\""};
+    }
+    std::string op;
+    auto result = JsonUtils::getString(op, root, g_RESPONSE_CONTEXT_OP);
+    if (result.code != JsonParseReturnCode::kSuccess) {
+        return result;
+    }
+    std::string table;
+    result = JsonUtils::getString(table, root, g_RESPONSE_CONTEXT_TABLE);
+    if (result.code != JsonParseReturnCode::kSuccess) {
+        return result;
+    }
+    std::string key;
+    result = JsonUtils::getString(key, root, g_RESPONSE_CONTEXT_KEY);
+    if (result.code != JsonParseReturnCode::kSuccess) {
+        return result;
+    }
+
+    // Invert does not require a value
+    if (op == g_OP_INVERT) {
+        response = std::make_shared<ResponseContextInvert>(std::move(table), std::move(key));
+        return JsonUtils::g_RESULT_SUCCESS;
+    }
+
+    if (!root.HasMember(g_RESPONSE_CONTEXT_VALUE)) {
+        return {JsonParseReturnCode::kMissingKey,
+                "Context response value must specify key \"" + g_RESPONSE_CONTEXT_VALUE + "\""};
+    }
+    const auto& value = root[g_RESPONSE_CONTEXT_VALUE];
+
+    if (op == g_OP_SET) {
+        if (value.IsBool()) {
+            response = std::make_shared<ResponseContextSetStatic>(std::move(table), std::move(key), FactType::kBoolean,
+                                                                  value.GetBool());
+        } else if (value.IsNumber()) {
+            response = std::make_shared<ResponseContextSetStatic>(std::move(table), std::move(key), FactType::kNumber,
+                                                                  value.GetFloat());
+        } else if (value.IsString()) {
+            response = std::make_shared<ResponseContextSetStatic>(std::move(table), std::move(key), FactType::kString,
+                                                                  stringTable.cache(value.GetString()));
+        } else if (value.IsObject()) {
+            // Set to another context key
+            if (!value.HasMember(g_RESPONSE_CONTEXT_TABLE)) {
+                return {JsonParseReturnCode::kMissingKey,
+                        "Context response set context value must specify key \"" + g_RESPONSE_CONTEXT_TABLE + "\""};
+            }
+            if (!value.HasMember(g_RESPONSE_CONTEXT_KEY)) {
+                return {JsonParseReturnCode::kMissingKey,
+                        "Context response set context value must specify key \"" + g_RESPONSE_CONTEXT_KEY + "\""};
+            }
+            std::string otherTable;
+            result = JsonUtils::getString(otherTable, value, g_RESPONSE_CONTEXT_TABLE);
+            if (result.code != JsonParseReturnCode::kSuccess) {
+                return result;
+            }
+            std::string otherKey;
+            result = JsonUtils::getString(otherKey, value, g_RESPONSE_CONTEXT_KEY);
+            if (result.code != JsonParseReturnCode::kSuccess) {
+                return result;
+            }
+            response = std::make_shared<ResponseContextSetDynamic>(std::move(table), std::move(key),
+                                                                   std::move(otherTable), std::move(otherKey));
+        } else if (value.IsArray()) {
+            // Set list
+            std::unordered_set<int> list;
+            list.reserve(value.Size());
+            bool isStringList = true;
+            for (auto iter = value.Begin(); iter != value.End(); ++iter) {
+                const auto& item = *iter;
+                if (item.IsString()) {
+                    list.insert(stringTable.cache(item.GetString()));
+                } else if (item.IsNumber()) {
+                    list.insert(item.GetInt());
+                    isStringList = false;
+                } else {
+                    return {JsonParseReturnCode::kInvalidType,
+                            "Context response set list item must be a string or integer"};
+                }
+            }
+            response = std::make_shared<ResponseContextSetList>(std::move(table), std::move(key), std::move(list),
+                                                                isStringList);
+        } else {
+            return {JsonParseReturnCode::kInvalidValue, "Unsupported value type for context response set operation"};
+        }
+        return JsonUtils::g_RESULT_SUCCESS;
+    }
+
+    if (op == g_OP_ADD) {
+        if (!value.IsNumber()) {
+            return {JsonParseReturnCode::kInvalidType, "Value for add operation must be numeric"};
+        }
+        response = std::make_shared<ResponseContextAdd>(std::move(table), std::move(key), value.GetFloat());
+        return JsonUtils::g_RESULT_SUCCESS;
+    }
+
+    if (op == g_OP_SUB) {
+        if (!value.IsNumber()) {
+            return {JsonParseReturnCode::kInvalidType, "Value for subtract operation must be numeric"};
+        }
+        response = std::make_shared<ResponseContextAdd>(std::move(table), std::move(key), -value.GetFloat());
+        return JsonUtils::g_RESULT_SUCCESS;
+    }
+
+    if (op == g_OP_MULT) {
+        if (!value.IsNumber()) {
+            return {JsonParseReturnCode::kInvalidType, "Value for multiply operation must be numeric"};
+        }
+        response = std::make_shared<ResponseContextAdd>(std::move(table), std::move(key), value.GetFloat());
+        return JsonUtils::g_RESULT_SUCCESS;
+    }
+    if (op == g_OP_DIV) {
+        if (!value.IsNumber()) {
+            return {JsonParseReturnCode::kInvalidType, "Value for multiply operation must be numeric"};
+        }
+        float floatVal = value.GetFloat();
+        if (floatVal == 0.0f) {
+            return {JsonParseReturnCode::kInvalidValue, "Divide operation cannot divide by zero"};
+        }
+        response = std::make_shared<ResponseContextAdd>(std::move(table), std::move(key), 1.0f / floatVal);
+        return JsonUtils::g_RESULT_SUCCESS;
+    }
+    return {JsonParseReturnCode::kInvalidValue, "Unknown context response operation \"" + op + "\""};
+}
+
+JsonParseResult parseResponseObject(std::shared_ptr<Response>& response, StringTable& stringTable,
+                                    const rapidjson::Value& root, const ParsingType parsingType,
                                     const std::unordered_map<std::string, std::shared_ptr<SymbolToken>>& symbols,
                                     const std::unordered_map<std::string, std::shared_ptr<SymbolToken>>& localSymbols,
                                     const std::unique_ptr<FunctionTable>& functionTable) {
@@ -135,13 +293,18 @@ JsonParseResult parseResponseObject(std::shared_ptr<Response>& response, const r
         }
         return parseEventResponse(response, value);
     }
+    if (type == g_RESPONSE_CONTEXT) {
+        if (parsingType == ParsingType::kSimple) {
+            return {JsonParseReturnCode::kInvalidValue, "Simple groups should not contain context responses"};
+        }
+        return parseContextResponse(response, stringTable, value);
+    }
 
-    // TODO: For any non-random response, check parsing type
     return {JsonParseReturnCode::kInvalidValue, "Unknown response type \"" + g_KEY_RESPONSE_TYPE + "\""};
 }
 
-JsonParseResult parseResponse(std::shared_ptr<Response>& response, const rapidjson::Value& root,
-                              const ParsingType parsingType,
+JsonParseResult parseResponse(std::shared_ptr<Response>& response, StringTable& stringTable,
+                              const rapidjson::Value& root, const ParsingType parsingType,
                               const std::unordered_map<std::string, std::shared_ptr<SymbolToken>>& symbols,
                               const std::unordered_map<std::string, std::shared_ptr<SymbolToken>>& localSymbols,
                               const std::unique_ptr<FunctionTable>& functionTable) {
@@ -155,12 +318,14 @@ JsonParseResult parseResponse(std::shared_ptr<Response>& response, const rapidjs
         }
         if (value.Size() == 1) {
             // Single response
-            return parseResponseObject(response, value[0], parsingType, symbols, localSymbols, functionTable);
+            return parseResponseObject(response, stringTable, value[0], parsingType, symbols, localSymbols,
+                                       functionTable);
         } else {
             std::vector<std::shared_ptr<Response>> responses;
             for (auto iter = value.Begin(); iter != value.End(); ++iter) {
                 std::shared_ptr<Response> item;
-                auto result = parseResponseObject(item, *iter, parsingType, symbols, localSymbols, functionTable);
+                auto result =
+                    parseResponseObject(item, stringTable, *iter, parsingType, symbols, localSymbols, functionTable);
                 if (result.code != JsonParseReturnCode::kSuccess) {
                     return result;
                 }
@@ -200,7 +365,7 @@ JsonParseResult parseRule(StringTable& stringTable, std::shared_ptr<RuleEntry>& 
     }
 
     std::shared_ptr<Response> response;
-    result = parseResponse(response, root, parsingType, symbols, localSymbols, functionTable);
+    result = parseResponse(response, stringTable, root, parsingType, symbols, localSymbols, functionTable);
     if (result.code != JsonParseReturnCode::kSuccess) {
         return result;
     }
