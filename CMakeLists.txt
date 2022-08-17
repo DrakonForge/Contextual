@@ -31,53 +31,53 @@ FetchContent_Declare(plog
 FetchContent_Populate(plog)
 
 set(EXECUTABLE_NAME context)
-set(SOURCES
-        src/Main.cpp
-        src/StringTable.cpp
-        src/ContextManager.cpp
-        src/ContextTable.cpp
-        src/RuleDatabase.cpp
-        src/RuleTable.cpp
-        src/DatabaseQuery.cpp
-        src/json/DatabaseParser.cpp
-        src/json/SymbolParser.cpp
-        src/json/RuleParser.cpp
-        src/json/JsonUtils.cpp
-        src/json/CriteriaParser.cpp
-        src/token/TokenBoolean.cpp
-        src/token/TokenContext.cpp
-        src/token/TokenString.cpp
-        src/token/TokenFloat.cpp
-        src/token/TokenFunction.cpp
-        src/token/TokenInt.cpp
-        src/token/TokenList.cpp
-        src/criterion/CriterionStatic.cpp
-        src/criterion/CriterionInvertible.cpp
-        src/criterion/CriterionFloatComparable.cpp
-        src/criterion/CriterionListComparable.cpp
-        src/criterion/CriterionExist.cpp
-        src/criterion/CriterionFail.cpp
-        src/criterion/Criterion.cpp
-        src/criterion/CriterionIncludes.cpp
-        src/criterion/CriterionEmpty.cpp
-        src/criterion/CriterionAlternate.cpp
-        src/criterion/CriterionDynamic.cpp
-        src/response/ResponseSimple.cpp
-        src/response/ResponseMultiple.cpp
-        src/response/ResponseSpeech.cpp
-        src/response/ResponseEvent.cpp
-        src/response/ResponseContext.cpp
-        src/response/ResponseContextSetStatic.cpp
-        src/response/ResponseContextSetDynamic.cpp
-        src/response/ResponseContextAdd.cpp
-        src/response/ResponseContextMultiply.cpp
-        src/response/ResponseContextSetList.cpp
-        src/response/ResponseContextInvert.cpp
-        src/speech/SpeechTokenizer.cpp
-        src/speech/SpeechGenerator.cpp
-        src/function/FunctionTable.cpp
-        src/function/DefaultFunctionTable.cpp src/MathUtils.cpp)
-set(INCLUDE_DIR
+set(LIB_SOURCES
+        ${CMAKE_SOURCE_DIR}/src/MathUtils.cpp
+        ${CMAKE_SOURCE_DIR}/src/StringTable.cpp
+        ${CMAKE_SOURCE_DIR}/src/ContextManager.cpp
+        ${CMAKE_SOURCE_DIR}/src/ContextTable.cpp
+        ${CMAKE_SOURCE_DIR}/src/RuleDatabase.cpp
+        ${CMAKE_SOURCE_DIR}/src/RuleTable.cpp
+        ${CMAKE_SOURCE_DIR}/src/DatabaseQuery.cpp
+        ${CMAKE_SOURCE_DIR}/src/json/DatabaseParser.cpp
+        ${CMAKE_SOURCE_DIR}/src/json/SymbolParser.cpp
+        ${CMAKE_SOURCE_DIR}/src/json/RuleParser.cpp
+        ${CMAKE_SOURCE_DIR}/src/json/JsonUtils.cpp
+        ${CMAKE_SOURCE_DIR}/src/json/CriteriaParser.cpp
+        ${CMAKE_SOURCE_DIR}/src/token/TokenBoolean.cpp
+        ${CMAKE_SOURCE_DIR}/src/token/TokenContext.cpp
+        ${CMAKE_SOURCE_DIR}/src/token/TokenString.cpp
+        ${CMAKE_SOURCE_DIR}/src/token/TokenFloat.cpp
+        ${CMAKE_SOURCE_DIR}/src/token/TokenFunction.cpp
+        ${CMAKE_SOURCE_DIR}/src/token/TokenInt.cpp
+        ${CMAKE_SOURCE_DIR}/src/token/TokenList.cpp
+        ${CMAKE_SOURCE_DIR}/src/criterion/CriterionStatic.cpp
+        ${CMAKE_SOURCE_DIR}/src/criterion/CriterionInvertible.cpp
+        ${CMAKE_SOURCE_DIR}/src/criterion/CriterionFloatComparable.cpp
+        ${CMAKE_SOURCE_DIR}/src/criterion/CriterionListComparable.cpp
+        ${CMAKE_SOURCE_DIR}/src/criterion/CriterionExist.cpp
+        ${CMAKE_SOURCE_DIR}/src/criterion/CriterionFail.cpp
+        ${CMAKE_SOURCE_DIR}/src/criterion/Criterion.cpp
+        ${CMAKE_SOURCE_DIR}/src/criterion/CriterionIncludes.cpp
+        ${CMAKE_SOURCE_DIR}/src/criterion/CriterionEmpty.cpp
+        ${CMAKE_SOURCE_DIR}/src/criterion/CriterionAlternate.cpp
+        ${CMAKE_SOURCE_DIR}/src/criterion/CriterionDynamic.cpp
+        ${CMAKE_SOURCE_DIR}/src/response/ResponseSimple.cpp
+        ${CMAKE_SOURCE_DIR}/src/response/ResponseMultiple.cpp
+        ${CMAKE_SOURCE_DIR}/src/response/ResponseSpeech.cpp
+        ${CMAKE_SOURCE_DIR}/src/response/ResponseEvent.cpp
+        ${CMAKE_SOURCE_DIR}/src/response/ResponseContext.cpp
+        ${CMAKE_SOURCE_DIR}/src/response/ResponseContextSetStatic.cpp
+        ${CMAKE_SOURCE_DIR}/src/response/ResponseContextSetDynamic.cpp
+        ${CMAKE_SOURCE_DIR}/src/response/ResponseContextAdd.cpp
+        ${CMAKE_SOURCE_DIR}/src/response/ResponseContextMultiply.cpp
+        ${CMAKE_SOURCE_DIR}/src/response/ResponseContextSetList.cpp
+        ${CMAKE_SOURCE_DIR}/src/response/ResponseContextInvert.cpp
+        ${CMAKE_SOURCE_DIR}/src/speech/SpeechTokenizer.cpp
+        ${CMAKE_SOURCE_DIR}/src/speech/SpeechGenerator.cpp
+        ${CMAKE_SOURCE_DIR}/src/function/FunctionTable.cpp
+        ${CMAKE_SOURCE_DIR}/src/function/DefaultFunctionTable.cpp)
+set(LIB_INCLUDE_DIR
         ${CMAKE_SOURCE_DIR}/include
         ${CMAKE_SOURCE_DIR}/include/json
         ${CMAKE_SOURCE_DIR}/include/criterion
@@ -88,8 +88,9 @@ set(INCLUDE_DIR
         ${rapidjson_SOURCE_DIR}/include
         ${plog_SOURCE_DIR}/include)
 
-add_executable(${EXECUTABLE_NAME} ${SOURCES})
-target_include_directories(${EXECUTABLE_NAME} PUBLIC ${INCLUDE_DIR})
+add_executable(${EXECUTABLE_NAME} src/Main.cpp ${LIB_SOURCES})
+target_include_directories(${EXECUTABLE_NAME} PUBLIC ${LIB_INCLUDE_DIR})
 
 include(GoogleTest)
 add_subdirectory(tests)
+add_subdirectory(src/app)
