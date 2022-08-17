@@ -6,7 +6,7 @@
 #include <memory>
 
 #include "JsonUtils.h"
-#include "token/SymbolToken.h"
+#include "SymbolToken.h"
 
 namespace Contextual::SymbolParser {
 

@@ -43,6 +43,7 @@ set(SOURCES
         src/json/SymbolParser.cpp
         src/json/RuleParser.cpp
         src/json/JsonUtils.cpp
+        src/json/CriteriaParser.cpp
         src/token/TokenBoolean.cpp
         src/token/TokenContext.cpp
         src/token/TokenString.cpp

@@ -1,18 +1,13 @@
 #pragma once
 
+#include "CriteriaParser.h"
 #include "DatabaseParser.h"
 #include "JsonUtils.h"
-#include "response/Response.h"
+#include "Response.h"
 #include "RuleTable.h"
-#include "token/SymbolToken.h"
+#include "SymbolToken.h"
 
 namespace Contextual::RuleParser {
-
-struct RuleInfo {
-    std::vector<std::shared_ptr<Criteria>> criteria;
-    std::shared_ptr<Response> response;
-    int priority;
-};
 
 JsonParseResult parseRule(StringTable& stringTable, std::shared_ptr<RuleEntry>& rule,
                           std::unordered_map<std::string, RuleInfo>& namedRules, int& nextId,

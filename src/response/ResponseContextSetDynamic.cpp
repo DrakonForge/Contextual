@@ -22,8 +22,7 @@ void ResponseContextSetDynamic::execute(DatabaseQuery& query) {
         const auto& list = otherContextTable->getList(m_otherKey);
         bool isStringList = otherContextTable->isStringList(m_otherKey);
         if (list == nullptr) {
-            auto listCopy = std::make_unique<std::unordered_set<int>>(std::move(*list));
-            contextTable->set(m_key, listCopy, isStringList);
+            contextTable->set(m_key, std::make_unique<std::unordered_set<int>>(std::move(*list)), isStringList);
         }
     } else {
         std::optional<float> rawValue = otherContextTable->getRawValue(m_otherKey);

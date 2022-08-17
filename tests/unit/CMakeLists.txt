@@ -22,6 +22,7 @@ set(TEST_SOURCES
         ${CMAKE_SOURCE_DIR}/src/json/SymbolParser.cpp
         ${CMAKE_SOURCE_DIR}/src/json/RuleParser.cpp
         ${CMAKE_SOURCE_DIR}/src/json/JsonUtils.cpp
+        ${CMAKE_SOURCE_DIR}/src/json/CriteriaParser.cpp
         ${CMAKE_SOURCE_DIR}/src/token/TokenBoolean.cpp
         ${CMAKE_SOURCE_DIR}/src/token/TokenContext.cpp
         ${CMAKE_SOURCE_DIR}/src/token/TokenString.cpp
@@ -44,6 +45,13 @@ set(TEST_SOURCES
         ${CMAKE_SOURCE_DIR}/src/response/ResponseMultiple.cpp
         ${CMAKE_SOURCE_DIR}/src/response/ResponseSpeech.cpp
         ${CMAKE_SOURCE_DIR}/src/response/ResponseEvent.cpp
+        ${CMAKE_SOURCE_DIR}/src/response/ResponseContext.cpp
+        ${CMAKE_SOURCE_DIR}/src/response/ResponseContextSetStatic.cpp
+        ${CMAKE_SOURCE_DIR}/src/response/ResponseContextSetDynamic.cpp
+        ${CMAKE_SOURCE_DIR}/src/response/ResponseContextAdd.cpp
+        ${CMAKE_SOURCE_DIR}/src/response/ResponseContextMultiply.cpp
+        ${CMAKE_SOURCE_DIR}/src/response/ResponseContextSetList.cpp
+        ${CMAKE_SOURCE_DIR}/src/response/ResponseContextInvert.cpp
         ${CMAKE_SOURCE_DIR}/src/speech/SpeechTokenizer.cpp
         ${CMAKE_SOURCE_DIR}/src/speech/SpeechGenerator.cpp
         ${CMAKE_SOURCE_DIR}/src/function/FunctionTable.cpp

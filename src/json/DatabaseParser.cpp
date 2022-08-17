@@ -12,7 +12,7 @@
 #include "JsonUtils.h"
 #include "RuleParser.h"
 #include "SymbolParser.h"
-#include "token/SymbolToken.h"
+#include "SymbolToken.h"
 
 namespace Contextual::RuleParser {
 
@@ -39,7 +39,7 @@ const std::string g_EXT_JSON = ".json";
 struct ParsedGroup {
     std::string name;
     std::unordered_map<std::string, std::shared_ptr<SymbolToken>> symbols;
-    std::unordered_map<std::string, RuleParser::RuleInfo> namedRules;
+    std::unordered_map<std::string, RuleInfo> namedRules;
 };
 
 struct QueuedGroup {
@@ -82,7 +82,7 @@ JsonParseResult getParsingType(ParsingType& type, const rapidjson::Value& root) 
     return JsonUtils::g_RESULT_SUCCESS;
 }
 
-JsonParseResult parseCategory(ParsedData& parsedData, std::unordered_map<std::string, RuleParser::RuleInfo>& namedRules,
+JsonParseResult parseCategory(ParsedData& parsedData, std::unordered_map<std::string, RuleInfo>& namedRules,
                               const ParsingType parsingType, const rapidjson::Value& root,
                               const std::unordered_map<std::string, std::shared_ptr<SymbolToken>>& symbols,
                               const std::string& groupName, const std::optional<ParsedGroup>& parsedParent) {
@@ -161,8 +161,7 @@ JsonParseResult parseCategory(ParsedData& parsedData, std::unordered_map<std::st
     return JsonUtils::g_RESULT_SUCCESS;
 }
 
-JsonParseResult parseCategories(ParsedData& parsedData,
-                                std::unordered_map<std::string, RuleParser::RuleInfo>& namedRules,
+JsonParseResult parseCategories(ParsedData& parsedData, std::unordered_map<std::string, RuleInfo>& namedRules,
                                 const ParsingType parsingType, const rapidjson::Value& root,
                                 const std::unordered_map<std::string, std::shared_ptr<SymbolToken>>& symbols,
                                 const std::string& groupName, const std::optional<ParsedGroup>& parsedParent) {
@@ -205,7 +204,7 @@ JsonParseResult parseGroup(ParsedData& parsedData, const rapidjson::Value& root,
         }
     }
 
-    std::unordered_map<std::string, RuleParser::RuleInfo> namedRules;
+    std::unordered_map<std::string, RuleInfo> namedRules;
     result = parseCategories(parsedData, namedRules, parsingType, root, symbols, name, parsedParent);
     if (result.code != JsonParseReturnCode::kSuccess) {
         return result;
