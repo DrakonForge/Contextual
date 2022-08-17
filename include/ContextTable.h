@@ -24,8 +24,8 @@ public:
     void set(const std::string& key, float floatValue);
     void set(const std::string& key, int intValue);
     void set(const std::string& key, bool boolValue);
-    void set(const std::string& key, std::unique_ptr<std::unordered_set<int>>& listValue);
-    void set(const std::string& key, std::unique_ptr<std::unordered_set<int>>& listValue, bool isStringList);
+    void set(const std::string& key, std::unique_ptr<std::unordered_set<int>> listValue);
+    void set(const std::string& key, std::unique_ptr<std::unordered_set<int>> listValue, bool isStringList);
     void set(const std::string& key, const std::unordered_set<const char*>& listValue);
     void set(const std::string& key, const std::unordered_set<std::string>& listValue);
     void setRawValue(const std::string& key, float value, FactType type);

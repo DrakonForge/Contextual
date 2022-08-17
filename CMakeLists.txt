@@ -65,13 +65,17 @@ set(SOURCES
         src/response/ResponseMultiple.cpp
         src/response/ResponseSpeech.cpp
         src/response/ResponseEvent.cpp
+        src/response/ResponseContext.cpp
+        src/response/ResponseContextSetStatic.cpp
+        src/response/ResponseContextSetDynamic.cpp
+        src/response/ResponseContextAdd.cpp
+        src/response/ResponseContextMultiply.cpp
+        src/response/ResponseContextSetList.cpp
+        src/response/ResponseContextInvert.cpp
         src/speech/SpeechTokenizer.cpp
         src/speech/SpeechGenerator.cpp
         src/function/FunctionTable.cpp
-        src/function/DefaultFunctionTable.cpp
-        src/response/ResponseContext.cpp
-        src/response/ResponseContextSetStatic.cpp
-        src/response/ResponseContextSetDynamic.cpp)
+        src/function/DefaultFunctionTable.cpp)
 set(INCLUDE_DIR
         ${CMAKE_SOURCE_DIR}/include
         ${CMAKE_SOURCE_DIR}/include/json

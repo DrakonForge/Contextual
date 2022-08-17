@@ -54,10 +54,10 @@ void ContextTable::setRawValue(const std::string& key, float value, FactType typ
     if (m_listContext) {
         m_listContext->erase(key);
     }
-    m_basicContext.insert_or_assign(key, tuple)
+    m_basicContext.insert_or_assign(key, tuple);
 }
 
-void ContextTable::set(const std::string& key, std::unique_ptr<std::unordered_set<int>>& listValue, bool isStringList) {
+void ContextTable::set(const std::string& key, std::unique_ptr<std::unordered_set<int>> listValue, bool isStringList) {
     if (!m_listContext) {
         m_listContext = std::unordered_map<std::string, std::pair<std::unique_ptr<std::unordered_set<int>>, bool>>();
     }
@@ -65,8 +65,8 @@ void ContextTable::set(const std::string& key, std::unique_ptr<std::unordered_se
     m_listContext->insert_or_assign(key, std::make_pair(std::move(listValue), isStringList));
 }
 
-void ContextTable::set(const std::string& key, std::unique_ptr<std::unordered_set<int>>& listValue) {
-    set(key, listValue, false);
+void ContextTable::set(const std::string& key, std::unique_ptr<std::unordered_set<int>> listValue) {
+    set(key, std::move(listValue), false);
 }
 
 void ContextTable::set(const std::string& key, const std::unordered_set<const char*>& listValue) {
@@ -75,7 +75,7 @@ void ContextTable::set(const std::string& key, const std::unordered_set<const ch
     for (const char* cStr : listValue) {
         intValues->insert(symbolTable.cache(std::string(cStr)));
     }
-    set(key, intValues, true);
+    set(key, std::move(intValues), true);
 }
 
 void ContextTable::set(const std::string& key, const std::unordered_set<std::string>& listValue) {
@@ -84,7 +84,7 @@ void ContextTable::set(const std::string& key, const std::unordered_set<std::str
     for (const std::string& str : listValue) {
         intValues->insert(symbolTable.cache(str));
     }
-    set(key, intValues, true);
+    set(key, std::move(intValues), true);
 }
 
 void ContextTable::remove(const std::string& key) {

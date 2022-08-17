@@ -79,7 +79,7 @@ TEST_F(ContextTableTest, TestIntList) {
     list->insert(1);
     list->insert(2);
     list->insert(3);
-    m_contextTable->set("Key", list);
+    m_contextTable->set("Key", std::move(list));
 
     EXPECT_TRUE(m_contextTable->hasKey("Key"));
     EXPECT_EQ(m_contextTable->getType("Key"), FactType::kList);
@@ -94,7 +94,8 @@ TEST_F(ContextTableTest, TestIntListExplicit) {
     list->insert(1);
     list->insert(2);
     list->insert(3);
-    m_contextTable->setRawValue("Key", list, false);
+    // An explicit string list is dangerous and should always be validated beforehand
+    m_contextTable->set("Key", std::move(list), false);
 
     EXPECT_TRUE(m_contextTable->hasKey("Key"));
     EXPECT_EQ(m_contextTable->getType("Key"), FactType::kList);
@@ -179,12 +180,36 @@ TEST_F(ContextTableTest, TestOverwriteList) {
     list->insert(1);
     list->insert(2);
     list->insert(3);
-    m_contextTable->set("Key", list);
+    m_contextTable->set("Key", std::move(list));
     EXPECT_TRUE(m_contextTable->hasKey("Key"));
     EXPECT_EQ(m_contextTable->getType("Key"), FactType::kList);
     EXPECT_EQ(m_contextTable->getString("Key"), std::nullopt);
     EXPECT_NE(m_contextTable->getList("Key"), nullptr);
     EXPECT_EQ(m_contextTable->getList("Key")->size(), 3);
+}
+
+TEST_F(ContextTableTest, TestSetRawValue) {
+    // setRawValue is dangerous and should only be used if the values have already been validated
+    m_contextTable->setRawValue("Key", 1.0f, FactType::kBoolean);
+
+    EXPECT_TRUE(m_contextTable->hasKey("Key"));
+    EXPECT_EQ(m_contextTable->getType("Key"), FactType::kBoolean);
+    EXPECT_EQ(m_contextTable->getRawValue("Key"), 1.0f);
+    EXPECT_EQ(m_contextTable->getBool("Key"), true);
+}
+
+TEST_F(ContextTableTest, TestRemoveValue) {
+    m_contextTable->set("Key", 1.5f);
+
+    EXPECT_TRUE(m_contextTable->hasKey("Key"));
+    EXPECT_EQ(m_contextTable->getType("Key"), FactType::kNumber);
+    EXPECT_EQ(m_contextTable->getFloat("Key"), 1.5f);
+
+    m_contextTable->remove("Key");
+
+    EXPECT_FALSE(m_contextTable->hasKey("Key"));
+    EXPECT_EQ(m_contextTable->getType("Key"), FactType::kNull);
+    EXPECT_EQ(m_contextTable->getFloat("Key"), std::nullopt);
 }
 
 }  // namespace Contextual
