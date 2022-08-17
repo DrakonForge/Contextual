@@ -1,6 +1,6 @@
 #include "CriterionFail.h"
 
-#include <random>
+#include "MathUtils.h"
 
 namespace Contextual {
 
@@ -11,14 +11,9 @@ int CriterionFail::getPriority() const {
 }
 
 bool CriterionFail::evaluate(const std::string& table, const std::string& key, const DatabaseQuery& query) const {
-    // TODO Improve RNG generation
-    // https://stackoverflow.com/questions/28653255/stddefault-random-engine-generates-the-same-values-even-with-changing-seed
-    static std::default_random_engine e;
-    static std::uniform_real_distribution<float> dis(0.0f, 1.0f);
-
     DatabaseQuery::WillFail failType = query.willFail();
     if (failType == DatabaseQuery::WillFail::kNormal) {
-        return dis(e) >= m_chanceToFail;
+        return MathUtils::randFloat(0.0f, 1.0f) >= m_chanceToFail;
     }
     if (failType == DatabaseQuery::WillFail::kNever) {
         return true;

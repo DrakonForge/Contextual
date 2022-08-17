@@ -1,9 +1,9 @@
 #include "TokenContext.h"
 
-#include <random>
 #include <utility>
 
 #include "ContextTable.h"
+#include "MathUtils.h"
 #include "SpeechGenerator.h"
 
 namespace Contextual {
@@ -27,9 +27,7 @@ std::optional<std::string> TokenContext::evaluate(DatabaseQuery& query) const {
         } else if (type == FactType::kList) {
             std::optional<std::vector<std::string>> options = contextTable->toStringList(m_key);
             if (options) {
-                static std::default_random_engine e;
-                std::uniform_int_distribution<size_t> dis(0, options->size() - 1);
-                size_t index = dis(e);
+                size_t index = MathUtils::randUInt(0, options->size() - 1);
                 return (*options)[index];
             }
         }

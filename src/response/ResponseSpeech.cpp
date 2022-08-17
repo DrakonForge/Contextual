@@ -1,6 +1,6 @@
 #include "ResponseSpeech.h"
 
-#include <random>
+#include "MathUtils.h"
 
 namespace Contextual {
 
@@ -17,9 +17,7 @@ const std::vector<std::shared_ptr<SpeechToken>>& ResponseSpeech::getRandomLine()
     }
 
     // Select random speech line
-    static std::default_random_engine e;
-    std::uniform_int_distribution<size_t> dis(0, m_speechLines.size() - 1);
-    size_t index = dis(e);
+    size_t index = MathUtils::randUInt(0, m_speechLines.size() - 1);
     return m_speechLines[index];
 }
 

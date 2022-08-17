@@ -2,8 +2,8 @@
 
 #include <algorithm>
 #include <limits>
-#include <random>
 
+#include "MathUtils.h"
 #include "ResponseMultiple.h"
 #include "ResponseSimple.h"
 
@@ -67,10 +67,7 @@ BestMatch RuleTable::queryBest(const DatabaseQuery& query) const {
     if (candidates.size() == 1) {
         return {candidates[0], highestMatchingPriority};
     }
-    // TODO Improve RNG generation
-    static std::default_random_engine e;
-    std::uniform_int_distribution<size_t> dis(0, candidates.size() - 1);
-    size_t index = dis(e);
+    size_t index = MathUtils::randUInt(0, candidates.size() - 1);
     return {candidates[index], highestMatchingPriority};
 }
 

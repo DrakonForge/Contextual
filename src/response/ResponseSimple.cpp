@@ -1,6 +1,6 @@
 #include "ResponseSimple.h"
 
-#include <random>
+#include "MathUtils.h"
 
 namespace Contextual {
 
@@ -14,9 +14,7 @@ const std::string& ResponseSimple::getRandomOption() const {
     if (m_options.empty()) {
         return g_EMPTY_STRING;
     }
-    static std::default_random_engine e;
-    std::uniform_int_distribution<size_t> dis(0, m_options.size() - 1);
-    size_t index = dis(e);
+    size_t index = MathUtils::randUInt(0, m_options.size() - 1);
     return m_options[index];
 }
 

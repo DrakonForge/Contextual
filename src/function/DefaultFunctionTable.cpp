@@ -1,8 +1,8 @@
 #include "DefaultFunctionTable.h"
 
 #include <algorithm>
-#include <random>
 
+#include "MathUtils.h"
 #include "SpeechGenerator.h"
 
 namespace Contextual {
@@ -105,7 +105,7 @@ FunctionVal listConcat(const std::vector<std::vector<int>>& lists, bool isString
 
 FunctionVal prev(int index, DatabaseQuery& query) {
     std::optional<std::string> prevChoice = query.getPrevChoice(index - 1);
-    if(prevChoice) {
+    if (prevChoice) {
         return FunctionVal(*prevChoice);
     }
     return FunctionVal();
@@ -113,11 +113,11 @@ FunctionVal prev(int index, DatabaseQuery& query) {
 
 FunctionVal prevMatch(int index, const std::vector<int>& list, DatabaseQuery& query) {
     std::optional<size_t> prevChoiceIndex = query.getPrevChoiceIndex(index - 1);
-    if(prevChoiceIndex) {
-        if(*prevChoiceIndex < list.size()) {
+    if (prevChoiceIndex) {
+        if (*prevChoiceIndex < list.size()) {
             // Guaranteed to be a string list
             std::optional<std::string> str = query.getStringTable().lookup(list[*prevChoiceIndex]);
-            if(str) {
+            if (str) {
                 return FunctionVal(*str);
             }
         }
@@ -178,10 +178,7 @@ FunctionVal mod(int a, int b) {
 }
 
 FunctionVal randInt(int min, int max) {
-    // TODO: Improve RNG generation
-    static std::default_random_engine e;
-    std::uniform_int_distribution<int> dis(min, max);
-    return FunctionVal(dis(e));
+    return FunctionVal(MathUtils::randInt(min, max));
 }
 
 FunctionVal num(int num) {

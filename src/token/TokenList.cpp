@@ -1,6 +1,6 @@
 #include "TokenList.h"
 
-#include <random>
+#include "MathUtils.h"
 
 namespace Contextual {
 
@@ -12,10 +12,7 @@ std::optional<std::string> TokenList::evaluate(DatabaseQuery& query) const {
 }
 
 std::optional<std::string> TokenList::evaluateList(DatabaseQuery& query, size_t& index) const {
-    // TODO Improve RNG generation
-    static std::default_random_engine e;
-    std::uniform_int_distribution<size_t> dis(0, m_tokens.size() - 1);
-    index = dis(e);
+    index = MathUtils::randUInt(0, m_tokens.size() - 1);
     const std::shared_ptr<SymbolToken>& token = m_tokens[index];
     return token->evaluate(query);
 }

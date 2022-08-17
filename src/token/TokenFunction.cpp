@@ -1,8 +1,8 @@
 #include "TokenFunction.h"
 
-#include <random>
 #include <utility>
 
+#include "MathUtils.h"
 #include "SpeechGenerator.h"
 
 namespace Contextual {
@@ -16,9 +16,7 @@ std::optional<std::string> TokenFunction::evaluate(DatabaseQuery& query) const {
         return std::nullopt;
     }
     if (val.type == TokenType::kList && val.isStringList) {
-        static std::default_random_engine e;
-        std::uniform_int_distribution<size_t> dis(0, val.listVal.size() - 1);
-        size_t index = dis(e);
+        size_t index = MathUtils::randUInt(0, val.listVal.size() - 1);
         return query.getStringTable().lookup(val.listVal[index]).value_or("NULL");
     }
     if (val.type == TokenType::kString) {
