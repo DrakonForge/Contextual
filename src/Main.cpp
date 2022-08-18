@@ -26,7 +26,7 @@ void testDatabaseLoading() {
     std::shared_ptr<Contextual::ContextManager> contextManager = createDefaultContextManager();
     std::filesystem::path path = std::filesystem::path("..") / std::filesystem::path("data");
     Contextual::RuleDatabase database(contextManager);
-    Contextual::RuleParser::DatabaseStats stats = Contextual::RuleParser::loadDatabase(database, path.string());
+    Contextual::DatabaseParser::DatabaseStats stats = Contextual::DatabaseParser::loadDatabase(database, path.string());
     PLOG_INFO << "Successful: " << stats.numLoaded;
     PLOG_INFO << "Failed: " << stats.numFailed;
     PLOG_INFO << "# Tables: " << stats.numTables;
@@ -44,7 +44,7 @@ void testResponseQueries(int numTimes, bool tokenize) {
     std::shared_ptr<Contextual::ContextManager> contextManager = createDefaultContextManager();
     std::filesystem::path path = std::filesystem::path("..") / std::filesystem::path("data");
     Contextual::RuleDatabase database(contextManager);
-    Contextual::RuleParser::loadDatabase(database, path.string());
+    Contextual::DatabaseParser::loadDatabase(database, path.string());
 
     // Create query
     Contextual::DatabaseQuery query(contextManager, "Person", "Interact");

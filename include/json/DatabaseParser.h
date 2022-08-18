@@ -5,7 +5,7 @@
 #include "JsonUtils.h"
 #include "RuleDatabase.h"
 
-namespace Contextual::RuleParser {
+namespace Contextual::DatabaseParser {
 
 struct DatabaseStats {
     uint32_t numLoaded;

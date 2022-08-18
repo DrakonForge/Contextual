@@ -261,7 +261,7 @@ JsonParseResult parseContextResponse(std::shared_ptr<Response>& response, String
 }
 
 JsonParseResult parseResponseObject(std::shared_ptr<Response>& response, StringTable& stringTable,
-                                    const rapidjson::Value& root, const ParsingType parsingType,
+                                    const rapidjson::Value& root, const DatabaseParser::ParsingType parsingType,
                                     const std::unordered_map<std::string, std::shared_ptr<SymbolToken>>& symbols,
                                     const std::unordered_map<std::string, std::shared_ptr<SymbolToken>>& localSymbols,
                                     const std::unique_ptr<FunctionTable>& functionTable) {
@@ -282,19 +282,19 @@ JsonParseResult parseResponseObject(std::shared_ptr<Response>& response, StringT
     const auto& value = root[g_KEY_RESPONSE_VALUE];
 
     if (type == g_RESPONSE_RANDOM) {
-        if (parsingType == ParsingType::kSpeechbank) {
+        if (parsingType == DatabaseParser::ParsingType::kSpeechbank) {
             return parseSpeechResponse(response, value, symbols, localSymbols, functionTable);
         }
         return parseSimpleResponse(response, value);
     }
     if (type == g_RESPONSE_EVENT) {
-        if (parsingType == ParsingType::kSimple) {
+        if (parsingType == DatabaseParser::ParsingType::kSimple) {
             return {JsonParseReturnCode::kInvalidValue, "Simple groups should not contain event responses"};
         }
         return parseEventResponse(response, value);
     }
     if (type == g_RESPONSE_CONTEXT) {
-        if (parsingType == ParsingType::kSimple) {
+        if (parsingType == DatabaseParser::ParsingType::kSimple) {
             return {JsonParseReturnCode::kInvalidValue, "Simple groups should not contain context responses"};
         }
         return parseContextResponse(response, stringTable, value);
@@ -304,7 +304,7 @@ JsonParseResult parseResponseObject(std::shared_ptr<Response>& response, StringT
 }
 
 JsonParseResult parseResponse(std::shared_ptr<Response>& response, StringTable& stringTable,
-                              const rapidjson::Value& root, const ParsingType parsingType,
+                              const rapidjson::Value& root, const DatabaseParser::ParsingType parsingType,
                               const std::unordered_map<std::string, std::shared_ptr<SymbolToken>>& symbols,
                               const std::unordered_map<std::string, std::shared_ptr<SymbolToken>>& localSymbols,
                               const std::unique_ptr<FunctionTable>& functionTable) {
@@ -343,7 +343,8 @@ JsonParseResult parseResponse(std::shared_ptr<Response>& response, StringTable& 
 
 JsonParseResult parseRule(StringTable& stringTable, std::shared_ptr<RuleEntry>& rule,
                           std::unordered_map<std::string, RuleInfo>& namedRules, int& nextId,
-                          const rapidjson::Value& root, const std::string& idPrefix, const ParsingType parsingType,
+                          const rapidjson::Value& root, const std::string& idPrefix,
+                          const DatabaseParser::ParsingType parsingType,
                           const std::unordered_map<std::string, std::shared_ptr<SymbolToken>>& symbols,
                           const std::unique_ptr<FunctionTable>& functionTable) {
     if (!root.IsObject()) {

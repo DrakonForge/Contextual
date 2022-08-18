@@ -14,7 +14,7 @@
 #include "SymbolParser.h"
 #include "SymbolToken.h"
 
-namespace Contextual::RuleParser {
+namespace Contextual::DatabaseParser {
 
 namespace {
 
