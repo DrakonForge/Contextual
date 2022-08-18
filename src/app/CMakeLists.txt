@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.18 FATAL_ERROR)
 project(ContextualApp)
 
+set(CMAKE_CXX_STANDARD 17)
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static-libstdc++ -static-libgcc -static")
+
 set(EXECUTABLE_NAME context-app)
 set(APP_SOURCES
         ${LIB_SOURCES}
