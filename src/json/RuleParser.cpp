@@ -25,7 +25,7 @@ const std::string g_KEY_RESPONSE_VALUE = "Value";
 const std::string g_KEY_RESPONSE_EVENT_NAME = "Name";
 const std::string g_KEY_RESPONSE_EVENT_ARGS = "Args";
 
-const std::string g_RESPONSE_RANDOM = "Random";
+const std::string g_RESPONSE_TEXT = "Text";
 const std::string g_RESPONSE_EVENT = "Event";
 const std::string g_RESPONSE_CONTEXT = "Context";
 const std::string g_RESPONSE_CONTEXT_OP = "Op";
@@ -281,7 +281,7 @@ JsonParseResult parseResponseObject(std::shared_ptr<Response>& response, StringT
     }
     const auto& value = root[g_KEY_RESPONSE_VALUE];
 
-    if (type == g_RESPONSE_RANDOM) {
+    if (type == g_RESPONSE_TEXT) {
         if (parsingType == DatabaseParser::ParsingType::kSpeechbank) {
             return parseSpeechResponse(response, value, symbols, localSymbols, functionTable);
         }

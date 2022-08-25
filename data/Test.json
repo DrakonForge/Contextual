@@ -228,7 +228,7 @@
               }
             },
             {
-              "Type": "Random",
+              "Type": "Text",
               "Value": [
                 "The current count is #Listener.Count.",
                 "The order is @B, @B, @B, @B, and @B. In reverse: @prev(5), @prev(4), @prev(3), @prev(2), @prev(1). The last item, @prev(5), is the @prev_match(5, @ordinals) letter of the alphabet."
