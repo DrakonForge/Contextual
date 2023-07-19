@@ -11,7 +11,6 @@ namespace Contextual {
 namespace {
 
 const std::unique_ptr<RuleTable> g_NOT_FOUND = nullptr;
-const int g_MAX_SPEECH_RETRIES = 3;
 
 }  // namespace
 
@@ -127,64 +126,6 @@ QueryReturnCode RuleDatabase::querySimpledWeightedMatch(SimpleWeightedMatch& sim
         return QueryReturnCode::kFailure;
     }
     return QueryReturnCode::kSuccess;
-}
-
-// Single workflow that queries the best matching line from the speechbank,
-// then extracts the speech line and also performs all other operations.
-// Does not necessarily have to be in this class.
-std::shared_ptr<ResponseSpeech> RuleDatabase::queryBestSpeechLineResponse(DatabaseQuery& query) const {
-    BestMatch bestMatch;
-    auto returnCode = queryBestMatch(bestMatch, query);
-    if (returnCode == QueryReturnCode::kFailure) {
-        return nullptr;
-    }
-
-    // Look for speech responses; there should only be one maximum
-    // There should never be a nested multiple response, so it is either top level or in a multiple response
-    if (bestMatch.response->getType() == ResponseType::kSpeech) {
-        return std::static_pointer_cast<ResponseSpeech>(bestMatch.response);
-    } else if (bestMatch.response->getType() == ResponseType::kMultiple) {
-        const auto& multipleResponse = std::static_pointer_cast<ResponseMultiple>(bestMatch.response);
-        std::shared_ptr<ResponseSpeech> responseSpeech;
-
-        // Go through all responses
-        for (const auto& response : multipleResponse->getResponses()) {
-            if(response->getType() == ResponseType::kContext) {
-                const auto& contextResponse = std::static_pointer_cast<ResponseContext>(response);
-                contextResponse->execute(query);
-            }
-            if (response->getType() == ResponseType::kSpeech) {
-                if(responseSpeech == nullptr) {
-                    responseSpeech = std::static_pointer_cast<ResponseSpeech>(response);
-                }
-                // Only the first speech response matters (or should exist)
-            }
-        }
-
-        // Can be nullptr
-        return responseSpeech;
-    }
-
-    return nullptr;
-}
-
-// TODO: Might want to switch to result so there is an error message, can also use a bool for this
-QueryReturnCode RuleDatabase::queryBestSpeechLine(std::vector<std::shared_ptr<TextToken>>& speechLine,
-                                                  DatabaseQuery& query) const {
-    std::shared_ptr<ResponseSpeech> speechResponse = queryBestSpeechLineResponse(query);
-    if (speechResponse == nullptr) {
-        return QueryReturnCode::kFailure;
-    }
-
-    int attempts = 0;
-    while (++attempts <= g_MAX_SPEECH_RETRIES) {
-        std::vector<std::shared_ptr<SpeechToken>> speechTokens = speechResponse->getRandomLine();
-        SpeechGeneratorReturnCode result = SpeechGenerator::generateLine(speechLine, query, speechTokens);
-        if (result == SpeechGeneratorReturnCode::kSuccess) {
-            return QueryReturnCode::kSuccess;
-        }
-    }
-    return QueryReturnCode::kFailure;
 }
 
 }  // namespace Contextual

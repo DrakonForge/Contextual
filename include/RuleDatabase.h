@@ -20,9 +20,6 @@ public:
     virtual ~RuleDatabase() = default;
     RuleDatabaseReturnCode addRuleTable(const std::string& group, const std::string& category,
                                         std::unique_ptr<RuleTable>& ruleTable);
-    std::shared_ptr<ResponseSpeech> queryBestSpeechLineResponse(DatabaseQuery& query) const;
-    QueryReturnCode queryBestSpeechLine(std::vector<std::shared_ptr<TextToken>>& speechLine,
-                                        DatabaseQuery& query) const;
     QueryReturnCode queryBestMatch(BestMatch& bestMatch, DatabaseQuery& query) const;
     QueryReturnCode queryUniformMatch(UniformMatch& uniformMatch, DatabaseQuery& query) const;
     QueryReturnCode queryWeightedMatch(WeightedMatch& weightedMatch, DatabaseQuery& query) const;

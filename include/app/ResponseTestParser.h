@@ -1,3 +1,0 @@
-namespace Contextual::App::ResponseTestParser {
-
-}

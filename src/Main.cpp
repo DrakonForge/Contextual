@@ -75,7 +75,7 @@ void testResponseQueries(int numTimes, bool tokenize) {
 
                 // Print out line
                 std::vector<std::shared_ptr<Contextual::TextToken>> speechLine;
-                auto returnCode = Contextual::SpeechGenerator::generateLine(speechLine, query, speechTokens);
+                auto returnCode = Contextual::SpeechGenerator::generateLineFromTokens(speechLine, query, speechTokens);
                 if (returnCode == Contextual::SpeechGeneratorReturnCode::kSuccess) {
                     PLOG_INFO << "\"" + Contextual::SpeechGenerator::getRawSpeechLine(speechLine) + "\"";
                 } else {

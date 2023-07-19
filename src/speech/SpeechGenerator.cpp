@@ -8,6 +8,8 @@
 #include <string>
 #include <vector>
 
+#include "ResponseContext.h"
+#include "ResponseMultiple.h"
 #include "SymbolToken.h"
 #include "TokenList.h"
 
@@ -34,6 +36,7 @@ const int g_VAL_THOUSAND = 1000;
 const int g_VAL_MILLION = 1000000;
 const int g_VAL_BILLION = 1000000000;
 const int g_MAX_LIST_ATTEMPTS = 5;
+const int g_MAX_SPEECH_ATTEMPTS = 3;
 
 // https://stackoverflow.com/questions/216823/how-to-trim-a-stdstring
 // trim from both ends (in place)
@@ -124,8 +127,58 @@ std::string helper(const int num) {
 
 }  // namespace
 
-SpeechGeneratorReturnCode generateLine(std::vector<std::shared_ptr<TextToken>>& speechLine, DatabaseQuery& query,
-                                       const std::vector<std::shared_ptr<SpeechToken>>& speechTokens) {
+// SelectionError -> no speech response, GenerationError -> speech response but failed to generate speech line
+SpeechGeneratorReturnCode performSpeechResponse(std::vector<std::shared_ptr<TextToken>>& speechLine,
+                                                std::shared_ptr<ResponseSpeech>& speechResponse, DatabaseQuery& query,
+                                                const std::shared_ptr<Response>& response) {
+    // Look for speech responses; there should only be one maximum
+    // There should never be a nested multiple response, so it is either top level or in a multiple response
+    if (response->getType() == ResponseType::kSpeech) {
+        speechResponse = std::static_pointer_cast<ResponseSpeech>(response);
+        if(generateLineFromResponse(speechLine, query, speechResponse)) {
+            return SpeechGeneratorReturnCode::kSuccess;
+        }
+        return SpeechGeneratorReturnCode::kGenerationError;
+    } else if (response->getType() == ResponseType::kMultiple) {
+        // Go through all responses
+        SpeechGeneratorReturnCode returnCode = SpeechGeneratorReturnCode::kSelectionError;
+        const auto& multipleResponse = std::static_pointer_cast<ResponseMultiple>(response);
+        for (const auto& responseItem : multipleResponse->getResponses()) {
+            if (responseItem->getType() == ResponseType::kContext) {
+                const auto& contextResponse = std::static_pointer_cast<ResponseContext>(response);
+                contextResponse->execute(query);
+            }
+            if (responseItem->getType() == ResponseType::kSpeech) {
+                // Only execute the first speech response
+                if (speechResponse == nullptr) {
+                    speechResponse = std::static_pointer_cast<ResponseSpeech>(responseItem);
+                    if(generateLineFromResponse(speechLine, query, speechResponse)) {
+                        returnCode = SpeechGeneratorReturnCode::kSuccess;
+                    } else {
+                        returnCode = SpeechGeneratorReturnCode::kGenerationError;
+                    }
+                }
+            }
+        }
+        return returnCode;
+    }
+    return SpeechGeneratorReturnCode::kSelectionError;
+}
+
+bool generateLineFromResponse(std::vector<std::shared_ptr<TextToken>>& speechLine, DatabaseQuery& query,
+                              const std::shared_ptr<ResponseSpeech>& speechResponse) {
+    int attempts = 0;
+    while (++attempts < g_MAX_SPEECH_ATTEMPTS) {
+        bool result = generateLineFromTokens(speechLine, query, speechResponse->getRandomLine());
+        if (result) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool generateLineFromTokens(std::vector<std::shared_ptr<TextToken>>& speechLine, DatabaseQuery& query,
+                            const std::vector<std::shared_ptr<SpeechToken>>& speechTokens) {
     bool hasText = false;
     std::unordered_map<std::shared_ptr<SpeechToken>, std::unordered_set<std::string>> chosenListOptions;
     query.clearPrevChoices();
@@ -162,7 +215,7 @@ SpeechGeneratorReturnCode generateLine(std::vector<std::shared_ptr<TextToken>>& 
                 }
                 speechLine.push_back(std::make_shared<TextLiteral>(std::move(*nextTokenStr)));
             } else {
-                return SpeechGeneratorReturnCode::kFailure;
+                return false;
             }
         } else {
             const auto& textToken = std::static_pointer_cast<TextToken>(token);
@@ -171,9 +224,9 @@ SpeechGeneratorReturnCode generateLine(std::vector<std::shared_ptr<TextToken>>& 
     }
     // Must have text to print properly
     if (!hasText) {
-        return SpeechGeneratorReturnCode::kFailure;
+        return false;
     }
-    return SpeechGeneratorReturnCode::kSuccess;
+    return true;
 }
 
 std::string getRawSpeechLine(const std::vector<std::shared_ptr<TextToken>>& speechLine) {

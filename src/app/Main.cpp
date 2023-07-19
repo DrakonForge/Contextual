@@ -9,43 +9,36 @@
 #include <string>
 #include <unordered_map>
 
+#include "AppSettings.h"
+#include "ContextParser.h"
+#include "DatabaseParser.h"
+#include "DefaultFunctionTable.h"
+#include "QueryParser.h"
+#include "RuleDatabase.h"
+#include "SpeechGenerator.h"
+
 const std::string g_OP_QUERY = "query";
 const std::string g_OP_TEST = "test";
 
 const std::string g_QUERY_BEST = "best";
 const std::string g_QUERY_ALL = "all";
 
-struct Flags {
-    bool debug{false};
-    bool tokenize{false};
-    bool showPriority{false};
-    bool print{true};
-    bool simple{false};
-    std::optional<std::string> operation;
-    std::optional<std::string> testFile;
-    std::optional<std::string> group;
-    std::optional<std::string> category;
-    std::string queryType = g_QUERY_BEST;
-    std::string inputDir = "./generated/compiled";
-    int count = 10;
-};
+const std::unordered_map<std::string, std::function<void(AppSettings&)>> NoArgHandles = {
+    {"--debug", [](AppSettings& s) { s.debug = true; }},
+    {"--noprint", [](AppSettings& s) { s.print = false; }},
+    {"--tokenize", [](AppSettings& s) { s.tokenize = true; }},
+    {"--priority", [](AppSettings& s) { s.showPriority = true; }},
+    {"--simple", [](AppSettings& s) { s.simple = true; }}};
 
-const std::unordered_map<std::string, std::function<void(Flags&)>> NoArgHandles = {
-    {"--debug", [](Flags& f) { f.debug = true; }},
-    {"--noprint", [](Flags& f) { f.print = false; }},
-    {"--tokenize", [](Flags& f) { f.tokenize = true; }},
-    {"--priority", [](Flags& f) { f.showPriority = true; }},
-    {"--simple", [](Flags& f) { f.simple = true; }}};
+const std::unordered_map<std::string, std::function<void(AppSettings&, const std::string&)>> OneArgHandles = {
+    {"--input", [](AppSettings& s, const std::string& arg) { s.inputDir = arg; }},
+    {"--group", [](AppSettings& s, const std::string& arg) { s.group = arg; }},
+    {"--category", [](AppSettings& s, const std::string& arg) { s.category = arg; }},
+    {"--query", [](AppSettings& s, const std::string& arg) { s.queryType = arg; }},
+    {"--count", [](AppSettings& s, const std::string& arg) { s.count = std::stoi(arg); }}};
 
-const std::unordered_map<std::string, std::function<void(Flags&, const std::string&)>> OneArgHandles = {
-    {"--input", [](Flags& f, const std::string& arg) { f.inputDir = arg; }},
-    {"--group", [](Flags& f, const std::string& arg) { f.group = arg; }},
-    {"--category", [](Flags& f, const std::string& arg) { f.category = arg; }},
-    {"--query", [](Flags& f, const std::string& arg) { f.queryType = arg; }},
-    {"--count", [](Flags& f, const std::string& arg) { f.count = std::stoi(arg); }}};
-
-Flags parseFlags(int argc, const char* argv[]) {
-    Flags flags;
+AppSettings parseFlags(int argc, const char* argv[]) {
+    AppSettings flags;
 
     for (int i = 1; i < argc; ++i) {
         std::string option = argv[i];
@@ -86,38 +79,126 @@ void printUsage(const std::string& name) {
                  "\tQueries the rule database with a group, category, and context.\n";
 }
 
-void doQuery(Flags& flags) {
-    PLOG_INFO << "QUERY";
+std::string tokensToString(const std::vector<std::shared_ptr<Contextual::SpeechToken>>& speechTokens) {
+    std::string output;
+    for (const auto& token : speechTokens) {
+        output += token->toString();
+    }
+    return output;
 }
 
-void doTest(Flags& flags) {
+bool loadDatabase(std::shared_ptr<Contextual::RuleDatabase>& database, const AppSettings& settings) {
+    // Create function table
+    std::unique_ptr<Contextual::FunctionTable> functionTable = std::make_unique<Contextual::DefaultFunctionTable>();
+    functionTable->initialize();
+
+    // Create context manager
+    std::shared_ptr<Contextual::ContextManager> contextManager =
+        std::make_shared<Contextual::ContextManager>(std::move(functionTable));
+    database = std::make_shared<Contextual::RuleDatabase>(contextManager);
+    Contextual::DatabaseParser::DatabaseStats stats =
+        Contextual::DatabaseParser::loadDatabase(*database, settings.inputDir);
+    return stats.numLoaded > 0 && stats.numFailed == 0;
+}
+
+void doQuery(AppSettings& settings, const std::string& name) {
+    if (!settings.testFile) {
+        PLOG_ERROR << "Must provide a query JSON file";
+        printUsage(name);
+        return;
+    }
+
+    // Load database
+    std::shared_ptr<Contextual::RuleDatabase> database;
+    bool success = loadDatabase(database, settings);
+    if (!success) {
+        PLOG_ERROR << "Failed to load database";
+        return;
+    }
+
+    // Load context tables
+    std::unordered_map<std::string, std::shared_ptr<Contextual::ContextTable>> contextTables;
+    auto result = Contextual::App::ContextParser::parseContextTables(contextTables, database->getContextManager(),
+                                                                     *settings.testFile);
+    if (result.code != Contextual::JsonParseReturnCode::kSuccess) {
+        PLOG_ERROR << "Error while parsing contexts: " << result.errorMsg;
+        return;
+    }
+
+    // Load query info from file
+    result = Contextual::App::QueryParser::parseQuery(settings, *settings.testFile);
+    if (result.code != Contextual::JsonParseReturnCode::kSuccess) {
+        PLOG_ERROR << "Error while parsing query: " << result.errorMsg;
+        return;
+    }
+
+    if (!settings.group || !settings.category) {
+        PLOG_ERROR << "Group and category must be specified";
+        return;
+    }
+
+    // Create query object
+    Contextual::DatabaseQuery query(database->getContextManager(), *settings.group, *settings.category);
+
+    if (settings.queryType == g_QUERY_BEST) {
+        for (int i = 0; i < settings.count; ++i) {
+            Contextual::BestMatch bestMatch;
+            Contextual::QueryReturnCode queryReturnCode = database->queryBestMatch(bestMatch, query);
+            if (queryReturnCode != Contextual::QueryReturnCode::kSuccess) {
+                PLOG_ERROR_IF(settings.print) << "No matching rule";
+                continue;
+            }
+            std::vector<std::shared_ptr<Contextual::TextToken>> speechLine;
+            std::shared_ptr<Contextual::ResponseSpeech> speechResponse;
+            Contextual::SpeechGenerator::SpeechGeneratorReturnCode speechGeneratorReturnCode =
+                Contextual::SpeechGenerator::performSpeechResponse(speechLine, speechResponse, query,
+                                                                   bestMatch.response);
+            if (speechGeneratorReturnCode == Contextual::SpeechGenerator::SpeechGeneratorReturnCode::kSelectionError) {
+                PLOG_ERROR_IF(settings.print) << "No valid speech response in matching rule";
+                continue;
+            }
+            if(settings.tokenize) {
+                // Don't care about generated speech line
+                PLOG_INFO_IF(settings.print) << tokensToString(speechResponse->getRandomLine());
+            } else {
+                PLOG_INFO_IF(settings.print) << "\"" + Contextual::SpeechGenerator::getRawSpeechLine(speechLine) + "\"";
+            }
+        }
+    } else if (settings.queryType == g_QUERY_ALL) {
+        // TODO Query all
+    } else {
+        PLOG_ERROR << "Unrecognized query type \"" << settings.queryType << "\"";
+    }
+}
+
+void doTest(AppSettings& settings, const std::string& name) {
     PLOG_INFO << "TEST";
 }
 
 // https://blog.nickelp.ro/posts/min-guide-to-cli/
 int main(int argc, const char* argv[]) {
-    Flags flags = parseFlags(argc, argv);
+    AppSettings settings = parseFlags(argc, argv);
 
     // Initializer
     static plog::ColorConsoleAppender<plog::MessageOnlyFormatter> consoleAppender;
-    if (flags.debug) {
+    if (settings.debug) {
         plog::init(plog::verbose, &consoleAppender);
     } else {
         plog::init(plog::info, &consoleAppender);
     }
 
     // Help menu
-    if (!flags.operation) {
+    if (!settings.operation) {
         printUsage(argv[0]);
         return -1;
     }
 
-    if (*flags.operation == g_OP_QUERY) {
-        doQuery(flags);
-    } else if (*flags.operation == g_OP_TEST) {
-        doTest(flags);
+    if (*settings.operation == g_OP_QUERY) {
+        doQuery(settings, argv[0]);
+    } else if (*settings.operation == g_OP_TEST) {
+        doTest(settings, argv[0]);
     } else {
-        PLOG_ERROR << "Unrecognized operation \"" << *flags.operation << "\"";
+        PLOG_ERROR << "Unrecognized operation \"" << *settings.operation << "\"";
         printUsage(argv[0]);
     }
     return 0;

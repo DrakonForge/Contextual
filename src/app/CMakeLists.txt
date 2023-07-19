@@ -9,8 +9,8 @@ set(APP_SOURCES
         ${LIB_SOURCES}
         ${CMAKE_SOURCE_DIR}/src/app/Main.cpp
         ${CMAKE_SOURCE_DIR}/src/app/ContextParser.cpp
-        ${CMAKE_SOURCE_DIR}/src/app/RuleTestParser.cpp
-        ${CMAKE_SOURCE_DIR}/src/app/ResponseTestParser.cpp)
+        ${CMAKE_SOURCE_DIR}/src/app/QueryParser.cpp
+        ${CMAKE_SOURCE_DIR}/src/app/TestParser.cpp)
 set(APP_INCLUDE_DIR
         ${LIB_INCLUDE_DIR}
         ${CMAKE_SOURCE_DIR}/include/app)
